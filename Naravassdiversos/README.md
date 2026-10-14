@@ -35,11 +35,14 @@ Naravassdiversos/
 ├── about.html          # Brand & location
 ├── contact.html        # Contact form → WhatsApp
 ├── delivery.html       # Luanda delivery rates
+├── admin.html          # Staff admin panel (products, texts, media)
 ├── css/
-│   └── styles.css      # Design system & layout
+│   ├── styles.css      # Design system & layout
+│   └── admin.css       # Admin panel styles
 ├── js/
 │   ├── products.js     # Product catalog data
-│   └── app.js          # Cart panel, i18n, shop, checkout
+│   ├── app.js          # Cart panel, i18n, shop, checkout + admin overrides
+│   └── admin.js        # Admin panel logic + Cloudinary uploads
 ├── images/
 │   ├── favicon.png     # Favicon (from logo)
 │   ├── favicon-*.png   # 16 / 32 / 48 / 180 sizes
@@ -234,6 +237,41 @@ After saving, the shop, featured section and product pages update automatically.
 
 ---
 
+## Admin panel
+
+Staff can manage products, delivery zones, site copy and media at **`admin.html`**.
+
+| Item | Detail |
+|------|--------|
+| URL | `/admin.html` |
+| Default password | `naravazz2026` (change in Definições after first login) |
+| Cloudinary account | `storengola@gmail.com` |
+
+### What you can edit
+- **Products** — add / edit / delete, price, category, badge, bilingual name & description, product image
+- **Delivery zones** — names and prices (synced with checkout)
+- **Site texts** — hero, promo banner, about, shop titles, etc. (PT + EN)
+- **Media** — upload images/videos to Cloudinary; copy CDN URLs into products
+
+### Cloudinary (configured)
+| Setting | Value |
+|---------|--------|
+| Account | storengola@gmail.com |
+| Cloud name | `mir8iioo` |
+| Upload preset | `naravazz_unsigned` (unsigned) |
+| Folder | `naravazz` |
+
+These values are pre-filled in Admin → **Definições**. Uploads use the unsigned preset so the **API secret never ships in the browser**. Keep the API key/secret only in Cloudinary / private backends — do not paste them into frontend files.
+
+### How changes are applied
+1. Edit in the admin and click **Guardar alterações**
+2. Overrides are stored in `localStorage` and applied automatically on the storefront **in the same browser**
+3. Click **Exportar products.js** to download an updated catalog file and deploy it to hosting so all visitors see the changes
+
+Storage keys: `nv_products_override`, `nv_zones_override`, `nv_texts_override`, `nv_cloudinary_cfg`, `nv_media_library`.
+
+---
+
 ## Browser support
 
 Modern evergreen browsers (Chrome, Firefox, Safari, Edge).  
@@ -245,3 +283,4 @@ Uses CSS custom properties, `backdrop-filter`, and ES6+.
 
 Client project for **Naravazz Diversos**.  
 All product images and brand assets belong to the client.
+

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Admin · Nara Vazz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <link rel="icon" href="images/favicon.png" type="image/png">
+</head>
+<body class="admin-body">
+
+  <!-- Login -->
+  <div class="admin-login" id="admin-login">
+    <div class="admin-login-card">
+      <h1>Nara Vazz Admin</h1>
+      <p class="sub">Área reservada à equipa da loja</p>
+      <div class="admin-login-error" id="login-error">Palavra-passe incorrecta</div>
+      <label for="admin-password">Palavra-passe</label>
+      <input type="password" id="admin-password" placeholder="••••••••" autocomplete="current-password">
+      <button type="button" class="btn-admin btn-admin-primary" style="width:100%" id="login-btn">Entrar</button>
+      <p style="margin-top:18px;font-size:0.75rem;color:var(--muted);text-align:center">
+        Conta Cloudinary: storengola@gmail.com
+      </p>
+    </div>
+  </div>
+
+  <!-- Shell -->
+  <div class="admin-shell" id="admin-shell">
+    <div class="admin-sidebar-overlay" id="sidebar-overlay"></div>
+
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="brand">
+        <span class="brand-name">Naravazz Diversos</span>
+        <span class="brand-tag">Painel de gestão</span>
+      </div>
+      <nav class="admin-nav" id="admin-nav">
+        <button type="button" data-panel="dashboard" class="active">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+          Dashboard
+        </button>
+        <button type="button" data-panel="products">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg>
+          Produtos
+        </button>
+        <button type="button" data-panel="delivery">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/></svg>
+          Entregas
+        </button>
+        <button type="button" data-panel="texts">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"/></svg>
+          Textos do site
+        </button>
+        <button type="button" data-panel="media">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z"/></svg>
+          Média
+        </button>
+        <button type="button" data-panel="settings">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Definições
+        </button>
+      </nav>
+      <div class="admin-sidebar-footer">
+        <a href="index.html" target="_blank">Ver loja ↗</a>
+        <br>
+        <button type="button" id="logout-btn" class="btn-admin btn-admin-ghost" style="color:rgba(247,241,236,0.7);margin-top:8px;padding:4px 0">Sair</button>
+      </div>
+    </aside>
+
+    <div class="admin-main">
+      <header class="admin-topbar">
+        <div style="display:flex;align-items:center;gap:10px">
+          <button type="button" class="admin-menu-toggle" id="menu-toggle" aria-label="Menu">
+            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+          </button>
+          <h2 id="panel-title">Dashboard</h2>
+        </div>
+        <div class="admin-topbar-actions">
+          <span class="cloudinary-status" id="cloudinary-status">Cloudinary</span>
+          <button type="button" class="btn-admin btn-admin-secondary btn-admin-sm" id="btn-export">Exportar products.js</button>
+          <button type="button" class="btn-admin btn-admin-primary btn-admin-sm" id="btn-save-all">Guardar alterações</button>
+        </div>
+      </header>
+
+      <div class="admin-content">
+
+        <!-- Dashboard -->
+        <section class="admin-panel active" id="panel-dashboard">
+          <div class="admin-stats">
+            <div class="admin-stat"><div class="num" id="stat-products">0</div><div class="label">Produtos</div></div>
+            <div class="admin-stat"><div class="num" id="stat-zones">0</div><div class="label">Zonas de entrega</div></div>
+            <div class="admin-stat"><div class="num" id="stat-media">0</div><div class="label">Ficheiros média</div></div>
+            <div class="admin-stat"><div class="num" id="stat-overrides">—</div><div class="label">Overrides activos</div></div>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>Como usar este painel</h3></div>
+            <div class="admin-card-body" style="font-size:0.9rem;color:var(--text-soft);line-height:1.7">
+              <p><strong>1.</strong> Configure o Cloudinary em <em>Definições</em> (cloud name + upload preset).</p>
+              <p><strong>2.</strong> Edite produtos, textos e zonas de entrega nas abas correspondentes.</p>
+              <p><strong>3.</strong> Clique em <strong>Guardar alterações</strong> — as mudanças ficam activas na loja neste browser (localStorage).</p>
+              <p><strong>4.</strong> Use <strong>Exportar products.js</strong> para descarregar o ficheiro actualizado e substituir no servidor/hospedagem.</p>
+              <p style="margin-top:12px;color:var(--muted);font-size:0.8rem">Conta Cloudinary associada: <strong>storengola@gmail.com</strong></p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Products -->
+        <section class="admin-panel" id="panel-products">
+          <div class="admin-toolbar">
+            <input type="search" class="admin-search" id="product-search" placeholder="Pesquisar produtos…">
+            <select id="product-filter-cat" class="admin-search" style="min-width:140px">
+              <option value="">Todas categorias</option>
+              <option value="pele">Pele</option>
+              <option value="corpo">Corpo</option>
+              <option value="cabelo">Cabelo</option>
+              <option value="perfume">Perfumes</option>
+              <option value="intimo">Íntimo</option>
+              <option value="solar">Solar</option>
+            </select>
+            <div class="spacer"></div>
+            <button type="button" class="btn-admin btn-admin-primary" id="btn-add-product">+ Novo produto</button>
+          </div>
+          <div class="admin-card">
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>Nome</th>
+                    <th>Categoria</th>
+                    <th>Preço</th>
+                    <th>Marca</th>
+                    <th>Badge</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="products-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Delivery -->
+        <section class="admin-panel" id="panel-delivery">
+          <div class="admin-toolbar">
+            <div class="spacer"></div>
+            <button type="button" class="btn-admin btn-admin-primary" id="btn-add-zone">+ Nova zona</button>
+          </div>
+          <div class="admin-card">
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Zona</th>
+                    <th>Preço (Kz)</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="zones-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Texts -->
+        <section class="admin-panel" id="panel-texts">
+          <div class="admin-toolbar">
+            <input type="search" class="admin-search" id="text-search" placeholder="Filtrar por chave…">
+            <div class="spacer"></div>
+            <button type="button" class="btn-admin btn-admin-secondary" id="btn-reset-texts">Restaurar originais</button>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3>Textos do site (PT / EN)</h3>
+            </div>
+            <div class="admin-card-body" id="texts-editor"></div>
+          </div>
+        </section>
+
+        <!-- Media -->
+        <section class="admin-panel" id="panel-media">
+          <div class="admin-toolbar">
+            <div class="spacer"></div>
+            <button type="button" class="btn-admin btn-admin-primary" id="btn-upload-media">Carregar para Cloudinary</button>
+          </div>
+          <div class="admin-card" style="margin-bottom:20px">
+            <div class="admin-card-body">
+              <div class="admin-upload-zone" id="media-dropzone">
+                <strong>Arraste imagens ou vídeos aqui</strong>
+                <p>ou clique para seleccionar · JPG, PNG, WEBP, MP4</p>
+                <input type="file" id="media-file-input" accept="image/*,video/mp4,video/webm" multiple hidden>
+              </div>
+              <div id="upload-progress" style="display:none;margin-top:12px;font-size:0.85rem;color:var(--muted)"></div>
+            </div>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>Biblioteca (uploads recentes)</h3></div>
+            <div class="admin-card-body">
+              <div class="media-grid" id="media-grid"></div>
+              <div class="admin-empty" id="media-empty" style="display:none">
+                <p>Ainda não há ficheiros carregados nesta sessão.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Settings -->
+        <section class="admin-panel" id="panel-settings">
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>Cloudinary</h3></div>
+            <div class="admin-card-body">
+              <div class="settings-block">
+                <p style="font-size:0.85rem;color:var(--text-soft);margin-bottom:16px">
+                  Conta: <strong>storengola@gmail.com</strong>. Crie um <em>Upload preset</em> unsigned no dashboard Cloudinary
+                  (Settings → Upload → Upload presets) e preencha abaixo.
+                </p>
+                <div class="admin-form-grid">
+                  <div class="admin-field">
+                    <label>Cloud name</label>
+                    <input type="text" id="cfg-cloud-name" placeholder="ex: dxxxxx">
+                  </div>
+                  <div class="admin-field">
+                    <label>Upload preset (unsigned)</label>
+                    <input type="text" id="cfg-upload-preset" placeholder="ex: naravazz_unsigned">
+                  </div>
+                  <div class="admin-field full">
+                    <label>Folder (opcional)</label>
+                    <input type="text" id="cfg-folder" placeholder="naravazz">
+                    <p class="hint">Pasta no Cloudinary onde os ficheiros serão guardados</p>
+                  </div>
+                </div>
+                <button type="button" class="btn-admin btn-admin-primary" style="margin-top:14px" id="btn-save-cloudinary">Guardar Cloudinary</button>
+              </div>
+            </div>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>Segurança</h3></div>
+            <div class="admin-card-body">
+              <div class="admin-form-grid">
+                <div class="admin-field">
+                  <label>Nova palavra-passe do admin</label>
+                  <input type="password" id="cfg-new-password" placeholder="Deixe vazio para não alterar">
+                </div>
+                <div class="admin-field">
+                  <label>Confirmar palavra-passe</label>
+                  <input type="password" id="cfg-new-password2" placeholder="Repetir">
+                </div>
+              </div>
+              <button type="button" class="btn-admin btn-admin-secondary" style="margin-top:14px" id="btn-save-password">Actualizar palavra-passe</button>
+              <p class="hint" style="margin-top:12px">Palavra-passe por defeito: <code>naravazz2026</code> — altere-a após o primeiro acesso.</p>
+            </div>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>Dados locais</h3></div>
+            <div class="admin-card-body">
+              <p style="font-size:0.85rem;color:var(--text-soft);margin-bottom:14px">
+                Os overrides guardados neste browser aplicam-se automaticamente na loja. Para publicar noutro dispositivo, exporte o ficheiro products.js.
+              </p>
+              <button type="button" class="btn-admin btn-admin-danger" id="btn-clear-overrides">Limpar todos os overrides (localStorage)</button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Product modal -->
+  <div class="admin-modal-overlay" id="product-modal">
+    <div class="admin-modal">
+      <div class="admin-modal-header">
+        <h3 id="product-modal-title">Editar produto</h3>
+        <button type="button" class="btn-admin btn-admin-ghost" id="product-modal-close">✕</button>
+      </div>
+      <div class="admin-modal-body">
+        <input type="hidden" id="p-id">
+        <div class="admin-form-grid">
+          <div class="admin-field full">
+            <label>ID (slug único)</label>
+            <input type="text" id="p-slug" placeholder="ex: sabonete-rosa">
+          </div>
+          <div class="admin-field">
+            <label>Nome (PT)</label>
+            <input type="text" id="p-name">
+          </div>
+          <div class="admin-field">
+            <label>Nome (EN)</label>
+            <input type="text" id="p-nameEn">
+          </div>
+          <div class="admin-field">
+            <label>Preço (Kz)</label>
+            <input type="number" id="p-price" min="0" step="100">
+          </div>
+          <div class="admin-field">
+            <label>Categoria</label>
+            <select id="p-category">
+              <option value="pele">Pele</option>
+              <option value="corpo">Corpo</option>
+              <option value="cabelo">Cabelo</option>
+              <option value="perfume">Perfumes</option>
+              <option value="intimo">Íntimo</option>
+              <option value="solar">Solar</option>
+            </select>
+          </div>
+          <div class="admin-field">
+            <label>Marca</label>
+            <input type="text" id="p-brand">
+          </div>
+          <div class="admin-field">
+            <label>Badge (opcional)</label>
+            <input type="text" id="p-badge" placeholder="Popular, Novo, Kit…">
+          </div>
+          <div class="admin-field full">
+            <label>Descrição (PT)</label>
+            <textarea id="p-desc"></textarea>
+          </div>
+          <div class="admin-field full">
+            <label>Descrição (EN)</label>
+            <textarea id="p-descEn"></textarea>
+          </div>
+          <div class="admin-field full">
+            <label>Imagem (URL ou caminho local)</label>
+            <input type="text" id="p-image" placeholder="images/… ou URL Cloudinary">
+            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+              <button type="button" class="btn-admin btn-admin-secondary btn-admin-sm" id="btn-upload-product-img">Upload Cloudinary</button>
+              <input type="file" id="p-image-file" accept="image/*" hidden>
+            </div>
+            <div class="admin-upload-preview" id="p-image-preview">
+              <img id="p-image-preview-img" alt="">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="btn-admin btn-admin-secondary" id="product-modal-cancel">Cancelar</button>
+        <button type="button" class="btn-admin btn-admin-primary" id="product-modal-save">Guardar produto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zone modal -->
+  <div class="admin-modal-overlay" id="zone-modal">
+    <div class="admin-modal" style="max-width:420px">
+      <div class="admin-modal-header">
+        <h3 id="zone-modal-title">Zona de entrega</h3>
+        <button type="button" class="btn-admin btn-admin-ghost" id="zone-modal-close">✕</button>
+      </div>
+      <div class="admin-modal-body">
+        <input type="hidden" id="z-index">
+        <div class="admin-field" style="margin-bottom:14px">
+          <label>Nome da zona</label>
+          <input type="text" id="z-name">
+        </div>
+        <div class="admin-field">
+          <label>Preço (Kz)</label>
+          <input type="number" id="z-price" min="0" step="100">
+        </div>
+      </div>
+      <div class="admin-modal-footer">
+        <button type="button" class="btn-admin btn-admin-secondary" id="zone-modal-cancel">Cancelar</button>
+        <button type="button" class="btn-admin btn-admin-primary" id="zone-modal-save">Guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-toast" id="admin-toast"></div>
+
+  <script src="js/products.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

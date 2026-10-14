@@ -3,6 +3,30 @@
 (function () {
   'use strict';
 
+  /* ---------- Admin overrides (from admin panel / localStorage) ---------- */
+  (function applyAdminOverrides() {
+    try {
+      const rawP = localStorage.getItem('nv_products_override');
+      if (rawP && typeof PRODUCTS !== 'undefined') {
+        const parsed = JSON.parse(rawP);
+        if (Array.isArray(parsed) && parsed.length) {
+          PRODUCTS.length = 0;
+          parsed.forEach(p => PRODUCTS.push(p));
+        }
+      }
+    } catch (e) { /* keep catalog defaults */ }
+    try {
+      const rawZ = localStorage.getItem('nv_zones_override');
+      if (rawZ && typeof DELIVERY_ZONES !== 'undefined') {
+        const parsed = JSON.parse(rawZ);
+        if (Array.isArray(parsed) && parsed.length) {
+          DELIVERY_ZONES.length = 0;
+          parsed.forEach(z => DELIVERY_ZONES.push(z));
+        }
+      }
+    } catch (e) { /* keep zone defaults */ }
+  })();
+
   /* ---------- Language ---------- */
   const LANG_KEY = 'nv_lang';
   let currentLang = localStorage.getItem(LANG_KEY) || 'pt';
@@ -214,6 +238,17 @@
       solar: { title: 'Sun', desc: 'Sun protection' }
     }
   };
+
+  /* Merge text overrides from admin panel */
+  (function applyTextOverrides() {
+    try {
+      const raw = localStorage.getItem('nv_texts_override');
+      if (!raw) return;
+      const ov = JSON.parse(raw);
+      if (ov.pt) Object.keys(ov.pt).forEach(k => { i18n.pt[k] = ov.pt[k]; });
+      if (ov.en) Object.keys(ov.en).forEach(k => { i18n.en[k] = ov.en[k]; });
+    } catch (e) { /* keep defaults */ }
+  })();
 
   function t(key) {
     return (i18n[currentLang] && i18n[currentLang][key]) || i18n.pt[key] || key;
