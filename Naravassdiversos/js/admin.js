@@ -28,7 +28,15 @@
   let zones = [];
   let texts = { pt: {}, en: {} };
   let mediaLibrary = [];
-  let cloudinaryCfg = { cloudName: 'mir8iioo', uploadPreset: 'naravazz_unsigned', folder: 'naravazz' };
+  let cloudinaryCfg = {
+    cloudName: 'mir8iioo',
+    uploadPreset: 'naravazz_unsigned',
+    folder: 'naravazz',
+    apiKey: '',
+    apiSecret: '',
+    publishUrl: 'https://naravazz-api.storengola.workers.dev/publish'
+  };
+  const CATALOG_PUBLIC_ID = 'naravazz/catalog';
   let editingProductIndex = -1;
 
   /* Default i18n keys editable in admin (subset of app.js) */
@@ -141,12 +149,99 @@
       if (c) {
         const parsed = JSON.parse(c);
         cloudinaryCfg = Object.assign({}, cloudinaryCfg, parsed);
-        // Keep known-good defaults if stored values are empty
         if (!cloudinaryCfg.cloudName) cloudinaryCfg.cloudName = 'mir8iioo';
         if (!cloudinaryCfg.uploadPreset) cloudinaryCfg.uploadPreset = 'naravazz_unsigned';
         if (!cloudinaryCfg.folder) cloudinaryCfg.folder = 'naravazz';
       }
     } catch (e) { /* keep defaults */ }
+  }
+
+  async function sha1Hex(message) {
+    const data = new TextEncoder().encode(message);
+    const hash = await crypto.subtle.digest('SHA-1', data);
+    return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  async function cloudinarySignedRawUpload(blob, publicId) {
+    if (!cloudinaryCfg.cloudName || !cloudinaryCfg.apiKey || !cloudinaryCfg.apiSecret) {
+      throw new Error('Configure API Key e API Secret em Definições para publicar.');
+    }
+    const timestamp = Math.floor(Date.now() / 1000);
+    // Params signed alphabetically: public_id, timestamp
+    const toSign = 'public_id=' + publicId + '&timestamp=' + timestamp + cloudinaryCfg.apiSecret;
+    const signature = await sha1Hex(toSign);
+
+    const fd = new FormData();
+    fd.append('file', blob, 'catalog.json');
+    fd.append('api_key', cloudinaryCfg.apiKey);
+    fd.append('timestamp', String(timestamp));
+    fd.append('signature', signature);
+    fd.append('public_id', publicId);
+
+    const url = 'https://api.cloudinary.com/v1_1/' + cloudinaryCfg.cloudName + '/raw/upload';
+    const res = await fetch(url, { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      throw new Error((data.error && data.error.message) || 'Falha ao publicar catalog.json');
+    }
+    return data;
+  }
+
+  async function publishViaWorker(catalog) {
+    const endpoint = (cloudinaryCfg.publishUrl || '').trim();
+    if (!endpoint) throw new Error('URL do Worker de publicação não configurada');
+
+    // Prefer session password prompt only if needed — use stored admin password flow
+    let password = sessionStorage.getItem('nv_publish_password') || '';
+    if (!password) {
+      password = window.prompt('Palavra-passe do admin para publicar:') || '';
+      if (!password) throw new Error('Publicação cancelada');
+      sessionStorage.setItem('nv_publish_password', password);
+    }
+
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password, catalog })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || data.error) {
+      if (res.status === 401) sessionStorage.removeItem('nv_publish_password');
+      throw new Error(data.error || 'Falha ao publicar via Worker');
+    }
+    return data;
+  }
+
+  async function publishCatalog() {
+    collectTextsFromEditor();
+    saveProducts();
+    saveZones();
+    saveTexts();
+
+    const catalog = {
+      products: products,
+      zones: zones,
+      texts: texts
+    };
+
+    let data;
+    if ((cloudinaryCfg.publishUrl || '').trim()) {
+      data = await publishViaWorker(catalog);
+    } else if (cloudinaryCfg.apiKey && cloudinaryCfg.apiSecret) {
+      const payload = {
+        updatedAt: new Date().toISOString(),
+        ...catalog
+      };
+      const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+      data = await cloudinarySignedRawUpload(blob, CATALOG_PUBLIC_ID);
+      data.updatedAt = payload.updatedAt;
+    } else {
+      throw new Error('Configure o Worker (publish URL) ou API Key/Secret em Definições');
+    }
+
+    localStorage.setItem('nv_catalog_published_at', data.updatedAt || new Date().toISOString());
+    localStorage.setItem('nv_catalog_url', data.secure_url || '');
+    return data;
   }
 
   function saveProducts() {
@@ -185,6 +280,7 @@
 
   function updateCloudinaryStatus() {
     const el = document.getElementById('cloudinary-status');
+    if (!el) return;
     if (cloudinaryReady()) {
       el.textContent = 'Cloudinary · ' + cloudinaryCfg.cloudName;
       el.className = 'cloudinary-status ok';
@@ -246,6 +342,7 @@
     const err = document.getElementById('login-error');
     if (input.value === getPassword()) {
       sessionStorage.setItem(STORAGE.auth, '1');
+      sessionStorage.setItem('nv_publish_password', input.value);
       err.classList.remove('show');
       showShell();
     } else {
@@ -562,6 +659,12 @@
     document.getElementById('cfg-cloud-name').value = cloudinaryCfg.cloudName || '';
     document.getElementById('cfg-upload-preset').value = cloudinaryCfg.uploadPreset || '';
     document.getElementById('cfg-folder').value = cloudinaryCfg.folder || 'naravazz';
+    const pub = document.getElementById('cfg-publish-url');
+    if (pub) pub.value = cloudinaryCfg.publishUrl || '';
+    const key = document.getElementById('cfg-api-key');
+    const sec = document.getElementById('cfg-api-secret');
+    if (key) key.value = cloudinaryCfg.apiKey || '';
+    if (sec) sec.value = cloudinaryCfg.apiSecret || '';
   }
 
   /* ---- Export products.js ---- */
@@ -757,9 +860,15 @@ function getProductsByCategory(cat) {
       cloudinaryCfg.cloudName = document.getElementById('cfg-cloud-name').value.trim();
       cloudinaryCfg.uploadPreset = document.getElementById('cfg-upload-preset').value.trim();
       cloudinaryCfg.folder = document.getElementById('cfg-folder').value.trim() || 'naravazz';
+      const pub = document.getElementById('cfg-publish-url');
+      if (pub) cloudinaryCfg.publishUrl = pub.value.trim();
+      const key = document.getElementById('cfg-api-key');
+      const sec = document.getElementById('cfg-api-secret');
+      if (key) cloudinaryCfg.apiKey = key.value.trim();
+      if (sec) cloudinaryCfg.apiSecret = sec.value.trim();
       saveCloudinary();
       updateCloudinaryStatus();
-      toast('Cloudinary guardado');
+      toast('Cloudinary / Worker guardado');
     });
 
     document.getElementById('btn-save-password').addEventListener('click', () => {
@@ -802,7 +911,24 @@ function getProductsByCategory(cat) {
       saveZones();
       saveTexts();
       renderDashboard();
-      toast('Alterações guardadas — activas na loja neste browser');
+      toast('Rascunho guardado — só neste browser');
+    });
+
+    document.getElementById('btn-publish').addEventListener('click', async () => {
+      const btn = document.getElementById('btn-publish');
+      btn.disabled = true;
+      btn.textContent = 'A publicar…';
+      try {
+        const data = await publishCatalog();
+        renderDashboard();
+        toast('Publicado — a loja já pode carregar o catálogo novo');
+        console.info('Catalog URL:', data.secure_url);
+      } catch (err) {
+        toast(err.message || 'Erro ao publicar', true);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Publicar na loja';
+      }
     });
 
     document.getElementById('btn-export').addEventListener('click', () => {

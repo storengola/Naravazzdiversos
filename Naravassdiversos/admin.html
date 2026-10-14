@@ -80,9 +80,9 @@
           <h2 id="panel-title">Dashboard</h2>
         </div>
         <div class="admin-topbar-actions">
-          <span class="cloudinary-status" id="cloudinary-status">Cloudinary</span>
           <button type="button" class="btn-admin btn-admin-secondary btn-admin-sm" id="btn-export">Exportar products.js</button>
-          <button type="button" class="btn-admin btn-admin-primary btn-admin-sm" id="btn-save-all">Guardar alterações</button>
+          <button type="button" class="btn-admin btn-admin-secondary btn-admin-sm" id="btn-save-all">Guardar rascunho</button>
+          <button type="button" class="btn-admin btn-admin-primary btn-admin-sm" id="btn-publish">Publicar na loja</button>
         </div>
       </header>
 
@@ -95,16 +95,6 @@
             <div class="admin-stat"><div class="num" id="stat-zones">0</div><div class="label">Zonas de entrega</div></div>
             <div class="admin-stat"><div class="num" id="stat-media">0</div><div class="label">Ficheiros média</div></div>
             <div class="admin-stat"><div class="num" id="stat-overrides">—</div><div class="label">Overrides activos</div></div>
-          </div>
-          <div class="admin-card">
-            <div class="admin-card-header"><h3>Como usar este painel</h3></div>
-            <div class="admin-card-body" style="font-size:0.9rem;color:var(--text-soft);line-height:1.7">
-              <p><strong>1.</strong> Configure o Cloudinary em <em>Definições</em> (cloud name + upload preset).</p>
-              <p><strong>2.</strong> Edite produtos, textos e zonas de entrega nas abas correspondentes.</p>
-              <p><strong>3.</strong> Clique em <strong>Guardar alterações</strong> — as mudanças ficam activas na loja neste browser (localStorage).</p>
-              <p><strong>4.</strong> Use <strong>Exportar products.js</strong> para descarregar o ficheiro actualizado e substituir no servidor/hospedagem.</p>
-              <p style="margin-top:12px;color:var(--muted);font-size:0.8rem">Conta Cloudinary associada: <strong>storengola@gmail.com</strong></p>
-            </div>
           </div>
         </section>
 
@@ -215,22 +205,35 @@
             <div class="admin-card-body">
               <div class="settings-block">
                 <p style="font-size:0.85rem;color:var(--text-soft);margin-bottom:16px">
-                  Conta: <strong>storengola@gmail.com</strong>. Crie um <em>Upload preset</em> unsigned no dashboard Cloudinary
-                  (Settings → Upload → Upload presets) e preencha abaixo.
+                  Conta: <strong>storengola@gmail.com</strong>.
+                  Media usa preset <em>unsigned</em>.
+                  <strong>Publicar na loja</strong> chama o Worker (só a palavra-passe do admin).
                 </p>
                 <div class="admin-form-grid">
                   <div class="admin-field">
                     <label>Cloud name</label>
-                    <input type="text" id="cfg-cloud-name" placeholder="ex: dxxxxx">
+                    <input type="text" id="cfg-cloud-name" placeholder="ex: mir8iioo">
                   </div>
                   <div class="admin-field">
                     <label>Upload preset (unsigned)</label>
                     <input type="text" id="cfg-upload-preset" placeholder="ex: naravazz_unsigned">
                   </div>
                   <div class="admin-field full">
-                    <label>Folder (opcional)</label>
+                    <label>Folder</label>
                     <input type="text" id="cfg-folder" placeholder="naravazz">
-                    <p class="hint">Pasta no Cloudinary onde os ficheiros serão guardados</p>
+                  </div>
+                  <div class="admin-field full">
+                    <label>Worker publish URL</label>
+                    <input type="url" id="cfg-publish-url" placeholder="https://naravazz-api.storengola.workers.dev/publish">
+                    <p class="hint">Cloudflare Worker que guarda o secret e grava catalog.json</p>
+                  </div>
+                  <div class="admin-field">
+                    <label>API Key (opcional)</label>
+                    <input type="text" id="cfg-api-key" placeholder="Só se não usar Worker" autocomplete="off">
+                  </div>
+                  <div class="admin-field">
+                    <label>API Secret (opcional)</label>
+                    <input type="password" id="cfg-api-secret" placeholder="Só se não usar Worker" autocomplete="off">
                   </div>
                 </div>
                 <button type="button" class="btn-admin btn-admin-primary" style="margin-top:14px" id="btn-save-cloudinary">Guardar Cloudinary</button>

@@ -261,12 +261,14 @@ Staff can manage products, delivery zones, site copy and media at **`admin.html`
 | Upload preset | `naravazz_unsigned` (unsigned) |
 | Folder | `naravazz` |
 
-These values are pre-filled in Admin → **Definições**. Uploads use the unsigned preset so the **API secret never ships in the browser**. Keep the API key/secret only in Cloudinary / private backends — do not paste them into frontend files.
+Media uploads use the **unsigned** preset. **Publicar na loja** needs API Key + Secret once in **Definições** (saved only in that browser’s `localStorage`, not in the repo).
 
 ### How changes are applied
-1. Edit in the admin and click **Guardar alterações**
-2. Overrides are stored in `localStorage` and applied automatically on the storefront **in the same browser**
-3. Click **Exportar products.js** to download an updated catalog file and deploy it to hosting so all visitors see the changes
+1. Edit in the admin
+2. **Guardar rascunho** — preview on the same browser only
+3. **Publicar na loja** — writes `catalog.json` to Cloudinary; all visitors load:
+   `https://res.cloudinary.com/mir8iioo/raw/upload/naravazz/catalog.json`
+4. Optional **Exportar products.js** for offline backup
 
 Storage keys: `nv_products_override`, `nv_zones_override`, `nv_texts_override`, `nv_cloudinary_cfg`, `nv_media_library`.
 

@@ -3,8 +3,27 @@
 (function () {
   'use strict';
 
-  /* ---------- Admin overrides (from admin panel / localStorage) ---------- */
-  (function applyAdminOverrides() {
+  /* Live catalog published by admin → Cloudinary JSON */
+  const CATALOG_JSON_URL = 'https://res.cloudinary.com/mir8iioo/raw/upload/naravazz/catalog.json';
+
+  function applyCatalogObject(data) {
+    if (!data || typeof data !== 'object') return;
+    try {
+      if (Array.isArray(data.products) && data.products.length && typeof PRODUCTS !== 'undefined') {
+        PRODUCTS.length = 0;
+        data.products.forEach(p => PRODUCTS.push(p));
+      }
+      if (Array.isArray(data.zones) && data.zones.length && typeof DELIVERY_ZONES !== 'undefined') {
+        DELIVERY_ZONES.length = 0;
+        data.zones.forEach(z => DELIVERY_ZONES.push(z));
+      }
+      if (data.texts) {
+        window.__NV_REMOTE_TEXTS = data.texts;
+      }
+    } catch (e) { /* keep defaults */ }
+  }
+
+  function applyLocalDraftOverrides() {
     try {
       const rawP = localStorage.getItem('nv_products_override');
       if (rawP && typeof PRODUCTS !== 'undefined') {
@@ -14,7 +33,7 @@
           parsed.forEach(p => PRODUCTS.push(p));
         }
       }
-    } catch (e) { /* keep catalog defaults */ }
+    } catch (e) { /* keep */ }
     try {
       const rawZ = localStorage.getItem('nv_zones_override');
       if (rawZ && typeof DELIVERY_ZONES !== 'undefined') {
@@ -24,8 +43,22 @@
           parsed.forEach(z => DELIVERY_ZONES.push(z));
         }
       }
-    } catch (e) { /* keep zone defaults */ }
-  })();
+    } catch (e) { /* keep */ }
+  }
+
+  async function loadRemoteCatalog() {
+    try {
+      const bust = Math.floor(Date.now() / 30000); // ~30s cache window
+      const res = await fetch(CATALOG_JSON_URL + '?t=' + bust, { cache: 'no-store' });
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (!data || !Array.isArray(data.products)) return false;
+      applyCatalogObject(data);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 
   /* ---------- Language ---------- */
   const LANG_KEY = 'nv_lang';
@@ -239,8 +272,14 @@
     }
   };
 
-  /* Merge text overrides from admin panel */
-  (function applyTextOverrides() {
+  function applyTextOverrides() {
+    try {
+      if (window.__NV_REMOTE_TEXTS) {
+        const ov = window.__NV_REMOTE_TEXTS;
+        if (ov.pt) Object.keys(ov.pt).forEach(k => { i18n.pt[k] = ov.pt[k]; });
+        if (ov.en) Object.keys(ov.en).forEach(k => { i18n.en[k] = ov.en[k]; });
+      }
+    } catch (e) { /* keep */ }
     try {
       const raw = localStorage.getItem('nv_texts_override');
       if (!raw) return;
@@ -248,7 +287,7 @@
       if (ov.pt) Object.keys(ov.pt).forEach(k => { i18n.pt[k] = ov.pt[k]; });
       if (ov.en) Object.keys(ov.en).forEach(k => { i18n.en[k] = ov.en[k]; });
     } catch (e) { /* keep defaults */ }
-  })();
+  }
 
   function t(key) {
     return (i18n[currentLang] && i18n[currentLang][key]) || i18n.pt[key] || key;
@@ -1306,7 +1345,11 @@
   }
 
   /* ---------- Init ---------- */
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
+    await loadRemoteCatalog();
+    applyLocalDraftOverrides();
+    applyTextOverrides();
+
     initHeader();
     initCartPanel();
     applyTranslations();

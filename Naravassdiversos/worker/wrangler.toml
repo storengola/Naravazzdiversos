@@ -1,0 +1,13 @@
+name = "naravazz-api"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+# Set secrets (do not put real values here):
+#   npx wrangler secret put ADMIN_PASSWORD
+#   npx wrangler secret put CLOUDINARY_CLOUD_NAME
+#   npx wrangler secret put CLOUDINARY_API_KEY
+#   npx wrangler secret put CLOUDINARY_API_SECRET
+#
+# Optional vars:
+# [vars]
+# CATALOG_PUBLIC_ID = "naravazz/catalog"
