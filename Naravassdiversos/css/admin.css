@@ -615,6 +615,45 @@ body.admin-body {
 }
 .admin-empty p { margin-top: 8px; font-size: 0.9rem; }
 
+/* Staff guide on dashboard */
+.admin-guide {
+  margin-top: 8px;
+}
+.admin-guide-body {
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--text);
+}
+.admin-guide-intro {
+  margin-bottom: 1.25rem;
+  color: var(--text-soft);
+}
+.admin-guide-body h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 1.35rem 0 0.5rem;
+  color: var(--text);
+}
+.admin-guide-body h4:first-of-type {
+  margin-top: 0;
+}
+.admin-guide-body ul,
+.admin-guide-body ol {
+  margin: 0 0 0.35rem 1.15rem;
+  padding: 0;
+}
+.admin-guide-body li {
+  margin-bottom: 0.35rem;
+}
+.admin-guide-note {
+  margin: 0.65rem 0 0;
+  padding: 10px 12px;
+  background: var(--primary-soft);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--primary-dark);
+}
+
 /* Stats row */
 .admin-stats {
   display: grid;
