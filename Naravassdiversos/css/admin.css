@@ -615,6 +615,59 @@ body.admin-body {
 }
 .admin-empty p { margin-top: 8px; font-size: 0.9rem; }
 
+/* Site image slots */
+.site-images-editor {
+  display: grid;
+  gap: 12px;
+}
+.site-image-slot {
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+  padding: 12px;
+  margin-bottom: 0;
+}
+.site-image-preview {
+  width: 96px;
+  height: 96px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--surface-alt);
+  border: 1px solid var(--border-soft);
+}
+.site-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.site-image-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+.site-image-meta strong {
+  font-size: 0.9rem;
+}
+.site-image-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+@media (max-width: 520px) {
+  .site-image-slot {
+    flex-direction: column;
+  }
+  .site-image-preview {
+    width: 100%;
+    height: 140px;
+  }
+}
+
 /* Staff guide on dashboard */
 .admin-guide {
   margin-top: 8px;

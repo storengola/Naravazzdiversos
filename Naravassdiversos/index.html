@@ -91,7 +91,7 @@
   </aside>
 
   <!-- Hero -->
-  <section class="hero">
+  <section class="hero" data-site-img-bg="hero">
     <div class="hero-content">
       <h1 data-i18n="heroTitle">Realçando a sua <strong>beleza</strong> todos os dias</h1>
       <p data-i18n="heroDesc">Cosméticos, maquiagem, perfumes e cuidados pessoais selecionados com amor para si.</p>
@@ -135,7 +135,7 @@
           <p class="soaps-desc" data-i18n="soapsDesc">Lavanda, girassol, rosas, canela, alecrim, carvão, enxofre, açafrão e mais. A Nara apresenta os sabonetes da loja.</p>
         </div>
         <div class="soaps-video-wrap">
-          <video class="soaps-video" loop playsinline webkit-playsinline preload="metadata" controls poster="images/poster-soaps.jpg">
+          <video class="soaps-video" loop playsinline webkit-playsinline preload="metadata" controls poster="images/poster-soaps.jpg" data-site-img="poster_soaps">
             <source src="videos/soaps.mp4" type="video/mp4">
           </video>
         </div>
@@ -151,27 +151,27 @@
       </div>
       <div class="cat-stack">
         <a href="shop.html?cat=pele" class="cat-card cat-card-hero">
-          <img src="images/cat-pele.jpg" alt="Pele" loading="lazy">
+          <img src="images/cat-pele.jpg" alt="Pele" data-site-img="cat_pele" loading="lazy">
           <span class="cat-card-label">Pele</span>
         </a>
         <a href="shop.html?cat=corpo" class="cat-card cat-card-hero">
-          <img src="images/SaveClip.App_791561045_18096113048410000_5270708848669191931_n.webp" alt="Corpo" loading="lazy">
+          <img src="images/SaveClip.App_791561045_18096113048410000_5270708848669191931_n.webp" alt="Corpo" loading="lazy" data-site-img="cat_corpo">
           <span class="cat-card-label">Corpo</span>
         </a>
         <a href="shop.html?cat=cabelo" class="cat-card cat-card-hero">
-          <img src="images/cat-cabelo.jpg" alt="Cabelo" loading="lazy">
+          <img src="images/cat-cabelo.jpg" alt="Cabelo" data-site-img="cat_cabelo" loading="lazy">
           <span class="cat-card-label">Cabelo</span>
         </a>
         <a href="shop.html?cat=perfume" class="cat-card cat-card-hero">
-          <img src="images/SaveClip.App_696167307_18082318238410000_1403620707140573358_n.webp" alt="Perfumes" loading="lazy">
+          <img src="images/SaveClip.App_696167307_18082318238410000_1403620707140573358_n.webp" alt="Perfumes" loading="lazy" data-site-img="cat_perfume">
           <span class="cat-card-label">Perfumes</span>
         </a>
         <a href="shop.html?cat=solar" class="cat-card cat-card-hero">
-          <img src="images/SaveClip.App_753231556_18089414354410000_5250035109845978277_n.webp" alt="Proteção Solar" loading="lazy">
+          <img src="images/SaveClip.App_753231556_18089414354410000_5250035109845978277_n.webp" alt="Proteção Solar" loading="lazy" data-site-img="cat_solar">
           <span class="cat-card-label">Solar</span>
         </a>
         <a href="shop.html?cat=intimo" class="cat-card cat-card-hero">
-          <img src="images/SaveClip.App_708891319_18083530490410000_1292920650234186326_n.webp" alt="Cuidados Íntimos" loading="lazy">
+          <img src="images/SaveClip.App_708891319_18083530490410000_1292920650234186326_n.webp" alt="Cuidados Íntimos" loading="lazy" data-site-img="cat_intimo">
           <span class="cat-card-label">Íntimos</span>
         </a>
       </div>
@@ -192,7 +192,7 @@
     <div class="experience-track-wrap">
       <div class="experience-track" id="experience-track">
         <article class="experience-card">
-          <video class="experience-video" loop playsinline webkit-playsinline preload="metadata" poster="images/poster-experiencia-loja.jpg">
+          <video class="experience-video" loop playsinline webkit-playsinline preload="metadata" poster="images/poster-experiencia-loja.jpg" data-site-img="poster_exp_loja">
             <source src="videos/experiencia-loja.mp4" type="video/mp4">
           </video>
           <div class="experience-overlay">
@@ -204,7 +204,7 @@
           </button>
         </article>
         <article class="experience-card">
-          <video class="experience-video" loop playsinline webkit-playsinline preload="metadata" poster="images/poster-experiencia-clientes.jpg">
+          <video class="experience-video" loop playsinline webkit-playsinline preload="metadata" poster="images/poster-experiencia-clientes.jpg" data-site-img="poster_exp_clientes">
             <source src="videos/experiencia-clientes.mp4" type="video/mp4">
           </video>
           <div class="experience-overlay">
@@ -216,7 +216,7 @@
           </button>
         </article>
         <article class="experience-card">
-          <video class="experience-video" loop playsinline webkit-playsinline preload="metadata" poster="images/poster-experiencia-depoimento.jpg">
+          <video class="experience-video" loop playsinline webkit-playsinline preload="metadata" poster="images/poster-experiencia-depoimento.jpg" data-site-img="poster_exp_depoimento">
             <source src="videos/experiencia-depoimento.mp4" type="video/mp4">
           </video>
           <div class="experience-overlay">
@@ -233,7 +233,7 @@
 
   <!-- Promo -->
   <section class="promo-banner">
-    <img class="promo-banner-img" src="images/cat-pele.jpg" alt="" aria-hidden="true" loading="lazy">
+    <img class="promo-banner-img" src="images/cat-pele.jpg" data-site-img="promo" alt="" aria-hidden="true" loading="lazy">
     <div class="promo-banner-overlay"></div>
     <div class="container promo-banner-content">
       <h2 data-i18n="promoTitle">Cuide da sua pele todos os dias</h2>
@@ -247,7 +247,7 @@
     <div class="container">
       <div class="about-teaser">
         <div class="about-teaser-img">
-          <img src="images/owner-nara.jpg" alt="Nara Vazz - fundadora da Naravazz Diversos" loading="lazy">
+          <img src="images/owner-nara.jpg" alt="Nara Vazz - fundadora da Naravazz Diversos" data-site-img="owner" loading="lazy">
         </div>
         <div class="about-teaser-text">
           <p class="section-eyebrow">Nara Vazz</p>
@@ -268,16 +268,16 @@
       </div>
       <div class="insta-grid">
         <a href="https://www.instagram.com/naravazz_diversos/" target="_blank" rel="noopener" class="insta-item">
-          <img src="images/gallery-1.jpg" alt="Cliente Nara Vazz" loading="lazy">
+          <img src="images/gallery-1.jpg" data-site-img="gallery_1" alt="Cliente Nara Vazz" loading="lazy">
         </a>
         <a href="https://www.instagram.com/naravazz_diversos/" target="_blank" rel="noopener" class="insta-item">
-          <img src="images/gallery-2.jpg" alt="Cliente na loja Nara Vazz" loading="lazy">
+          <img src="images/gallery-2.jpg" data-site-img="gallery_2" alt="Cliente na loja Nara Vazz" loading="lazy">
         </a>
         <a href="https://www.instagram.com/naravazz_diversos/" target="_blank" rel="noopener" class="insta-item">
-          <img src="images/gallery-3.jpg" alt="Cliente com sacola Nara Vazz" loading="lazy">
+          <img src="images/gallery-3.jpg" data-site-img="gallery_3" alt="Cliente com sacola Nara Vazz" loading="lazy">
         </a>
         <a href="https://www.instagram.com/naravazz_diversos/" target="_blank" rel="noopener" class="insta-item">
-          <img src="images/gallery-4.jpg" alt="Cliente Nara Vazz" loading="lazy">
+          <img src="images/gallery-4.jpg" data-site-img="gallery_4" alt="Cliente Nara Vazz" loading="lazy">
         </a>
       </div>
     </div>

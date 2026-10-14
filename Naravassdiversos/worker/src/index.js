@@ -110,7 +110,8 @@ export default {
           updatedAt: new Date().toISOString(),
           products: catalog.products,
           zones: Array.isArray(catalog.zones) ? catalog.zones : [],
-          texts: catalog.texts && typeof catalog.texts === 'object' ? catalog.texts : { pt: {}, en: {} }
+          texts: catalog.texts && typeof catalog.texts === 'object' ? catalog.texts : { pt: {}, en: {} },
+          images: catalog.images && typeof catalog.images === 'object' ? catalog.images : {}
         };
         const data = await uploadCatalogToCloudinary(env, payload);
         return json({

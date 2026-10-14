@@ -20,6 +20,9 @@
       if (data.texts) {
         window.__NV_REMOTE_TEXTS = data.texts;
       }
+      if (data.images && typeof data.images === 'object') {
+        window.__NV_REMOTE_IMAGES = data.images;
+      }
     } catch (e) { /* keep defaults */ }
   }
 
@@ -44,6 +47,43 @@
         }
       }
     } catch (e) { /* keep */ }
+  }
+
+  /** Merge remote + local draft site images, then apply to DOM */
+  function applySiteImages() {
+    const images = {};
+    try {
+      if (window.__NV_REMOTE_IMAGES) {
+        Object.assign(images, window.__NV_REMOTE_IMAGES);
+      }
+    } catch (e) { /* */ }
+    try {
+      const raw = localStorage.getItem('nv_images_override');
+      if (raw) Object.assign(images, JSON.parse(raw));
+    } catch (e) { /* */ }
+
+    // CSS background slots
+    const bgMap = {
+      hero: { el: document.querySelector('[data-site-img-bg="hero"]'), prop: '--hero-bg' },
+      shop_hero: { el: document.querySelector('[data-site-img-bg="shop_hero"]'), prop: '--shop-hero-bg' }
+    };
+    Object.keys(bgMap).forEach(key => {
+      const url = images[key];
+      if (!url || !bgMap[key].el) return;
+      bgMap[key].el.style.setProperty(bgMap[key].prop, 'url("' + url.replace(/"/g, '\\"') + '")');
+    });
+
+    // <img> and video poster slots
+    document.querySelectorAll('[data-site-img]').forEach(el => {
+      const key = el.getAttribute('data-site-img');
+      const url = images[key];
+      if (!url) return;
+      if (el.tagName === 'IMG') {
+        el.src = url;
+      } else if (el.tagName === 'VIDEO') {
+        el.setAttribute('poster', url);
+      }
+    });
   }
 
   async function loadRemoteCatalog() {
@@ -1378,6 +1418,7 @@
     await loadRemoteCatalog();
     applyLocalDraftOverrides();
     applyTextOverrides();
+    applySiteImages();
 
     initHeader();
     initCartPanel();

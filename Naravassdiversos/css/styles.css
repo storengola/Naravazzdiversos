@@ -569,7 +569,7 @@ ul, ol {
   content: '';
   position: absolute;
   inset: 0;
-  background: url('../images/hero-store.jpg') center/cover no-repeat;
+  background: var(--hero-bg, url('../images/hero-store.jpg')) center/cover no-repeat;
   opacity: 0.7;
 }
 
@@ -1533,7 +1533,7 @@ ul, ol {
   content: '';
   position: absolute;
   inset: 0;
-  background: url('../images/categories-hero.jpg') center/cover no-repeat;
+  background: var(--shop-hero-bg, url('../images/categories-hero.jpg')) center/cover no-repeat;
   z-index: 0;
 }
 

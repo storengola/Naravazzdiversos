@@ -8,8 +8,52 @@
     products: 'nv_products_override',
     zones: 'nv_zones_override',
     texts: 'nv_texts_override',
+    images: 'nv_images_override',
     media: 'nv_media_library',
     cloudinary: 'nv_cloudinary_cfg'
+  };
+
+  /** Site-wide image slots (staff-editable). Defaults match shipped HTML/CSS. */
+  const SITE_IMAGE_SLOTS = [
+    { key: 'hero', label: 'Hero (página inicial)', hint: 'Fundo grande do topo' },
+    { key: 'promo', label: 'Banner promo / CTA', hint: 'Secção “Cuide da sua pele…”' },
+    { key: 'shop_hero', label: 'Hero da loja', hint: 'Topo da página shop' },
+    { key: 'owner', label: 'Foto da Nara (Sobre)', hint: 'Homepage + página Sobre' },
+    { key: 'cat_pele', label: 'Categoria — Pele' },
+    { key: 'cat_corpo', label: 'Categoria — Corpo' },
+    { key: 'cat_cabelo', label: 'Categoria — Cabelo' },
+    { key: 'cat_perfume', label: 'Categoria — Perfumes' },
+    { key: 'cat_solar', label: 'Categoria — Solar' },
+    { key: 'cat_intimo', label: 'Categoria — Íntimos' },
+    { key: 'gallery_1', label: 'Galeria 1' },
+    { key: 'gallery_2', label: 'Galeria 2' },
+    { key: 'gallery_3', label: 'Galeria 3' },
+    { key: 'gallery_4', label: 'Galeria 4' },
+    { key: 'poster_soaps', label: 'Poster vídeo Soaps' },
+    { key: 'poster_exp_loja', label: 'Poster vídeo — Na loja' },
+    { key: 'poster_exp_clientes', label: 'Poster vídeo — Clientes' },
+    { key: 'poster_exp_depoimento', label: 'Poster vídeo — Depoimento' }
+  ];
+
+  const DEFAULT_SITE_IMAGES = {
+    hero: 'images/hero-store.jpg',
+    promo: 'images/cat-pele.jpg',
+    shop_hero: 'images/categories-hero.jpg',
+    owner: 'images/owner-nara.jpg',
+    cat_pele: 'images/cat-pele.jpg',
+    cat_corpo: 'images/SaveClip.App_791561045_18096113048410000_5270708848669191931_n.webp',
+    cat_cabelo: 'images/cat-cabelo.jpg',
+    cat_perfume: 'images/SaveClip.App_696167307_18082318238410000_1403620707140573358_n.webp',
+    cat_solar: 'images/SaveClip.App_753231556_18089414354410000_5250035109845978277_n.webp',
+    cat_intimo: 'images/SaveClip.App_708891319_18083530490410000_1292920650234186326_n.webp',
+    gallery_1: 'images/gallery-1.jpg',
+    gallery_2: 'images/gallery-2.jpg',
+    gallery_3: 'images/gallery-3.jpg',
+    gallery_4: 'images/gallery-4.jpg',
+    poster_soaps: 'images/poster-soaps.jpg',
+    poster_exp_loja: 'images/poster-experiencia-loja.jpg',
+    poster_exp_clientes: 'images/poster-experiencia-clientes.jpg',
+    poster_exp_depoimento: 'images/poster-experiencia-depoimento.jpg'
   };
 
   const DEFAULT_PASSWORD = 'naravazz2026';
@@ -27,6 +71,7 @@
   let products = [];
   let zones = [];
   let texts = { pt: {}, en: {} };
+  let siteImages = Object.assign({}, DEFAULT_SITE_IMAGES);
   let mediaLibrary = [];
   let cloudinaryCfg = {
     cloudName: 'mir8iioo',
@@ -38,6 +83,7 @@
   };
   const CATALOG_PUBLIC_ID = 'naravazz/catalog';
   let editingProductIndex = -1;
+  let siteImagePickKey = null;
 
   /* Default i18n keys editable in admin (subset of app.js) */
   const DEFAULT_TEXTS = {
@@ -140,6 +186,16 @@
       texts = JSON.parse(JSON.stringify(DEFAULT_TEXTS));
     }
     try {
+      const img = localStorage.getItem(STORAGE.images);
+      if (img) {
+        siteImages = Object.assign({}, DEFAULT_SITE_IMAGES, JSON.parse(img));
+      } else {
+        siteImages = Object.assign({}, DEFAULT_SITE_IMAGES);
+      }
+    } catch (e) {
+      siteImages = Object.assign({}, DEFAULT_SITE_IMAGES);
+    }
+    try {
       mediaLibrary = JSON.parse(localStorage.getItem(STORAGE.media) || '[]');
     } catch (e) {
       mediaLibrary = [];
@@ -217,11 +273,13 @@
     saveProducts();
     saveZones();
     saveTexts();
+    saveImages();
 
     const catalog = {
       products: products,
       zones: zones,
-      texts: texts
+      texts: texts,
+      images: siteImages
     };
 
     let data;
@@ -252,6 +310,9 @@
   }
   function saveTexts() {
     localStorage.setItem(STORAGE.texts, JSON.stringify(texts));
+  }
+  function saveImages() {
+    localStorage.setItem(STORAGE.images, JSON.stringify(siteImages));
   }
   function saveMedia() {
     localStorage.setItem(STORAGE.media, JSON.stringify(mediaLibrary.slice(0, 80)));
@@ -332,6 +393,7 @@
     renderDashboard();
     renderProducts();
     renderZones();
+    renderSiteImages();
     renderTexts();
     renderMedia();
     fillSettingsForm();
@@ -357,6 +419,7 @@
     products: 'Produtos',
     delivery: 'Entregas',
     texts: 'Textos do site',
+    images: 'Imagens do site',
     media: 'Média',
     settings: 'Definições'
   };
@@ -381,8 +444,9 @@
     const hasP = !!localStorage.getItem(STORAGE.products);
     const hasZ = !!localStorage.getItem(STORAGE.zones);
     const hasT = !!localStorage.getItem(STORAGE.texts);
+    const hasI = !!localStorage.getItem(STORAGE.images);
     document.getElementById('stat-overrides').textContent =
-      [hasP && 'produtos', hasZ && 'entregas', hasT && 'textos'].filter(Boolean).join(', ') || 'nenhum';
+      [hasP && 'produtos', hasZ && 'entregas', hasT && 'textos', hasI && 'imagens'].filter(Boolean).join(', ') || 'nenhum';
   }
 
   /* ---- Products ---- */
@@ -624,6 +688,63 @@
     });
   }
 
+  /* ---- Site images ---- */
+  function renderSiteImages() {
+    const container = document.getElementById('site-images-editor');
+    if (!container) return;
+    container.innerHTML = SITE_IMAGE_SLOTS.map(slot => {
+      const url = siteImages[slot.key] || DEFAULT_SITE_IMAGES[slot.key] || '';
+      return `<div class="admin-card site-image-slot" data-key="${escapeAttr(slot.key)}">
+        <div class="site-image-preview">
+          <img src="${escapeAttr(url)}" alt="" onerror="this.style.opacity=0.3">
+        </div>
+        <div class="site-image-meta">
+          <strong>${escapeHtml(slot.label)}</strong>
+          ${slot.hint ? '<p class="hint">' + escapeHtml(slot.hint) + '</p>' : ''}
+          <div class="site-image-actions">
+            <button type="button" class="btn-admin btn-admin-primary btn-admin-sm" data-si-upload="${escapeAttr(slot.key)}">Carregar</button>
+            <button type="button" class="btn-admin btn-admin-secondary btn-admin-sm" data-si-pick="${escapeAttr(slot.key)}">Escolher da média</button>
+            <button type="button" class="btn-admin btn-admin-ghost btn-admin-sm" data-si-reset="${escapeAttr(slot.key)}">Original</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function setSiteImage(key, url) {
+    if (!key || !url) return;
+    siteImages[key] = url;
+    saveImages();
+    renderSiteImages();
+    renderDashboard();
+    toast('Imagem actualizada — publique para a loja ver');
+  }
+
+  function openMediaPicker(key) {
+    siteImagePickKey = key;
+    const grid = document.getElementById('media-picker-grid');
+    const empty = document.getElementById('media-picker-empty');
+    const images = mediaLibrary.filter(m => !m.resourceType || m.resourceType === 'image');
+    if (!images.length) {
+      grid.innerHTML = '';
+      if (empty) empty.style.display = 'block';
+    } else {
+      if (empty) empty.style.display = 'none';
+      grid.innerHTML = images.map((m, i) => `
+        <button type="button" class="media-item media-picker-item" data-pick-url="${escapeAttr(m.url)}" style="cursor:pointer;border:none;padding:0;text-align:left">
+          <img src="${escapeAttr(m.url)}" alt="" loading="lazy">
+          <div class="media-meta">Usar esta</div>
+        </button>
+      `).join('');
+    }
+    document.getElementById('media-picker-modal').classList.add('open');
+  }
+
+  function closeMediaPicker() {
+    siteImagePickKey = null;
+    document.getElementById('media-picker-modal').classList.remove('open');
+  }
+
   /* ---- Media ---- */
   function renderMedia() {
     const grid = document.getElementById('media-grid');
@@ -799,6 +920,58 @@
       toast('Textos restaurados');
     });
 
+    /* Site images panel */
+    const siteEditor = document.getElementById('site-images-editor');
+    const siteFileInput = document.getElementById('site-image-file-input');
+    if (siteEditor) {
+      siteEditor.addEventListener('click', async e => {
+        const uploadBtn = e.target.closest('[data-si-upload]');
+        const pickBtn = e.target.closest('[data-si-pick]');
+        const resetBtn = e.target.closest('[data-si-reset]');
+        if (uploadBtn) {
+          siteImagePickKey = uploadBtn.getAttribute('data-si-upload');
+          if (siteFileInput) siteFileInput.click();
+        } else if (pickBtn) {
+          openMediaPicker(pickBtn.getAttribute('data-si-pick'));
+        } else if (resetBtn) {
+          const key = resetBtn.getAttribute('data-si-reset');
+          siteImages[key] = DEFAULT_SITE_IMAGES[key] || '';
+          saveImages();
+          renderSiteImages();
+          toast('Imagem reposta ao original');
+        }
+      });
+    }
+    if (siteFileInput) {
+      siteFileInput.addEventListener('change', async e => {
+        const file = e.target.files && e.target.files[0];
+        const key = siteImagePickKey;
+        e.target.value = '';
+        if (!file || !key) return;
+        try {
+          toast('A carregar imagem…');
+          const entry = await uploadToCloudinary(file);
+          setSiteImage(key, entry.url);
+          renderMedia();
+        } catch (err) {
+          toast(err.message || 'Erro no upload', true);
+        }
+        siteImagePickKey = null;
+      });
+    }
+    document.getElementById('media-picker-close')?.addEventListener('click', closeMediaPicker);
+    document.getElementById('media-picker-cancel')?.addEventListener('click', closeMediaPicker);
+    document.getElementById('media-picker-modal')?.addEventListener('click', e => {
+      if (e.target.id === 'media-picker-modal') closeMediaPicker();
+    });
+    document.getElementById('media-picker-grid')?.addEventListener('click', e => {
+      const item = e.target.closest('[data-pick-url]');
+      if (!item || !siteImagePickKey) return;
+      const url = item.getAttribute('data-pick-url');
+      setSiteImage(siteImagePickKey, url);
+      closeMediaPicker();
+    });
+
     const dropzone = document.getElementById('media-dropzone');
     const fileInput = document.getElementById('media-file-input');
     dropzone.addEventListener('click', () => fileInput.click());
@@ -866,14 +1039,16 @@
     });
 
     document.getElementById('btn-clear-overrides').addEventListener('click', () => {
-      if (!confirm('Limpar produtos, zonas e textos guardados neste browser?')) return;
+      if (!confirm('Limpar produtos, zonas, textos e imagens guardados neste browser?')) return;
       localStorage.removeItem(STORAGE.products);
       localStorage.removeItem(STORAGE.zones);
       localStorage.removeItem(STORAGE.texts);
+      localStorage.removeItem(STORAGE.images);
       loadState();
       renderDashboard();
       renderProducts();
       renderZones();
+      renderSiteImages();
       renderTexts();
       toast('Overrides limpos — a loja volta aos ficheiros originais');
     });
@@ -883,6 +1058,7 @@
       saveProducts();
       saveZones();
       saveTexts();
+      saveImages();
       renderDashboard();
       toast('Rascunho guardado — só neste browser');
     });
