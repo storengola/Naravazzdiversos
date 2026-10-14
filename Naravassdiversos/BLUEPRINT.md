@@ -1,16 +1,20 @@
 # Site + Admin Blueprint
 
-Reusable architecture for small e‑commerce / brochure sites with a staff admin panel.
+Reusable architecture for small e‑commerce / brochure sites with a **staff admin panel**.  
+Derived from Naravazz Diversos (Luanda). Copy this pattern to a new brand by renaming folders, WhatsApp number, Cloudinary folder, and Worker name.
 
 ---
 
 ### Stack
 
 * Pure HTML / CSS / JS (no framework, no build step)
-* **Cloudflare Pages** (static site) + **Cloudflare Worker** (publish API)
-* **Cloudinary** — media (unsigned) + live catalog JSON (signed via Worker)
-* **localStorage** — admin draft / same-browser preview
-* Optional later: **Cloudflare KV** instead of Cloudinary for the catalog
+* **Cloudflare Pages** — static site
+* **Cloudflare Worker** — publish API (holds Cloudinary secrets; phones only need admin password)
+* **Cloudinary** — media uploads (unsigned preset) + live `catalog.json` (signed upload via Worker)
+* **localStorage** — admin drafts / same-browser preview
+* Orders via **WhatsApp** (no payment backend)
+
+Optional later: Cloudflare KV for the catalog instead of Cloudinary raw JSON.
 
 ---
 
@@ -18,99 +22,118 @@ Reusable architecture for small e‑commerce / brochure sites with a staff admin
 
 ```
 project/
-├── index.html
-├── shop.html / product.html / cart.html / checkout.html …
+├── index.html, shop.html, product.html, cart.html, checkout.html …
 ├── admin.html                 # Staff panel (password-gated)
 ├── css/
-│   ├── styles.css             # Public site
-│   └── admin.css              # Admin UI
+│   ├── styles.css             # Public site (mobile-first, safe-area)
+│   └── admin.css              # Admin UI (sticky actions, product cards, full-screen modals)
 ├── js/
-│   ├── products.js            # Default catalog + delivery zones (fallback)
-│   ├── app.js                 # Cart, i18n, shop logic + loads live catalog
-│   └── admin.js               # Admin CRUD, Cloudinary media, publish via Worker
-├── images/                    # Fallback / static assets
+│   ├── products.js            # Default PRODUCTS + DELIVERY_ZONES (fallback)
+│   ├── app.js                 # Cart, i18n, shop + loads live catalog/images
+│   └── admin.js               # CRUD, media, site images, publish via Worker
+├── images/                    # Default static assets (hero, categories, gallery…)
 ├── videos/
-├── worker/                    # Cloudflare Worker — holds Cloudinary secret
+├── worker/                    # Cloudflare Worker
 │   ├── src/index.js
-│   ├── wrangler.toml
+│   ├── wrangler.toml          # workers_dev = true, preview_urls = true
 │   └── README.md
-└── README.md / BLUEPRINT.md
+├── BLUEPRINT.md               # This file (reuse)
+└── README.md                  # Client-specific notes
+```
+
+---
+
+### Data model (live catalog)
+
+Published file: **`catalog.json`** on Cloudinary (fixed `public_id`, e.g. `{folder}/catalog`).
+
+```json
+{
+  "updatedAt": "2026-10-14T21:00:00.000Z",
+  "products": [ { "id": "…", "name": "…", "price": 3500, "image": "…", … } ],
+  "zones":    [ { "name": "Talatona", "price": 2000 } ],
+  "texts":    { "pt": { "heroTitle": "…" }, "en": { "heroTitle": "…" } },
+  "images":   { "hero": "https://…", "promo": "https://…", "cat_pele": "…" }
+}
+```
+
+Remote URL pattern:
+
+```text
+https://res.cloudinary.com/{CLOUD_NAME}/raw/upload/{FOLDER}/catalog.json
 ```
 
 ---
 
 ### Public site (how data is read)
 
-1. Page loads `products.js` → defines `PRODUCTS` and `DELIVERY_ZONES`.
-2. `app.js` then applies live data (in order):
-   - `localStorage` keys (admin preview on the **same browser**)
-   - Remote **Cloudinary JSON** (published catalog for **all** visitors)
-3. If remote JSON fails or is empty → keep defaults from `products.js`.
-4. Cart stays in `localStorage` (`nv_cart`).
-5. Orders go out via **WhatsApp** link (no backend checkout).
+1. Load `products.js` → default `PRODUCTS` and `DELIVERY_ZONES`.
+2. `app.js` fetches remote `catalog.json` (cache-bust `?t=`).
+3. Apply in order:
+   - **localStorage** drafts (admin preview on the **same browser**)
+   - **Remote catalog** (everyone after publish)
+4. If remote fails → keep defaults from `products.js` / static HTML images.
+5. Cart: `localStorage` key `nv_cart`.
+6. Checkout builds a WhatsApp deep link (`wa.me`). On mobile use `location.href` (Safari often blocks `window.open`).
 
-**Remote catalog URL pattern (Cloudinary):**
+**Site images on the page**
 
-```text
-https://res.cloudinary.com/{CLOUD_NAME}/raw/upload/{FOLDER}/catalog.json
-```
-
-Example:
-
-```text
-https://res.cloudinary.com/mir8iioo/raw/upload/naravazz/catalog.json
-```
-
-`catalog.json` shape:
-
-```json
-{
-  "updatedAt": "2026-10-14T17:00:00.000Z",
-  "products": [ { "id": "...", "name": "...", "price": 3500, ... } ],
-  "zones":    [ { "name": "Talatona", "price": 2000 }, ... ],
-  "texts":    { "pt": { "heroTitle": "..." }, "en": { "heroTitle": "..." } }
-}
-```
+* Mark slots with `data-site-img="key"` on `<img>` / `<video poster>` and `data-site-img-bg="key"` on sections that use CSS backgrounds.
+* CSS uses variables with fallbacks, e.g. `background: var(--hero-bg, url('../images/hero-store.jpg'))`.
+* `applySiteImages()` merges remote `images` + `nv_images_override` and sets `src` / CSS variables.
 
 ---
 
-### Admin panel (how staff change things)
+### Admin panel (staff)
 
-| Area | Storage while editing | Publish (everyone sees it) |
-|------|------------------------|----------------------------|
-| Products | `localStorage` `nv_products_override` | `catalog.json` → Cloudinary (via Worker) |
-| Delivery zones | `nv_zones_override` | Same JSON |
-| Site texts (i18n) | `nv_texts_override` | Same JSON |
-| Media (images/videos) | Upload → Cloudinary CDN URL | URL saved on product / used in pages |
+| Area | localStorage draft | Publish (everyone) |
+|------|--------------------|--------------------|
+| Products | `nv_products_override` | `catalog.json` → products |
+| Delivery zones | `nv_zones_override` | zones |
+| Site texts (i18n) | `nv_texts_override` | texts |
+| Site images (hero, promo, categories…) | `nv_images_override` | images |
+| Media library list | `nv_media_library` | not published as a list; URLs used on products/slots |
 
-**Login:** simple password in `sessionStorage` / `localStorage` (change default after first use). Not bank-grade; enough to keep the URL from casual visitors.
+**Login:** password in `sessionStorage` / `localStorage` (simple gate, not bank-grade).
 
-**Buttons:**
+**Buttons**
 
-* **Guardar rascunho** — write overrides to `localStorage` (preview on this browser only).
-* **Publicar na loja** — POST catalog + admin password to the **Cloudflare Worker**. Worker verifies password, signs the upload, writes `naravazz/catalog.json` to Cloudinary. Live site fetches it on next load.
+* **Guardar rascunho** — write overrides to this browser only.
+* **Publicar na loja** — POST `{ password, catalog }` to the Worker → signed Cloudinary upload of `catalog.json`.
+
+**Site images UX (no manual URLs)**
+
+* Panel **Imagens do site**: one card per slot (preview + **Carregar** / **Escolher da média** / **Original**).
+* **Carregar** uploads to Cloudinary and assigns the returned URL to the slot.
+* **Escolher da média** opens the media library grid; tap an image to assign.
+* Staff never need to copy-paste CDN URLs for site slots.
+
+**Media library**
+
+* Upload via unsigned preset (browser).
+* **URL** copies link; **✕** removes the entry from the **browser library only** (does not destroy the Cloudinary asset — free storage via Cloudinary dashboard or a signed destroy API later).
+
+**Dashboard**
+
+* Stats + written staff guide (language of the market) explaining draft vs publish, each menu, mobile tips, and “if something breaks → contact the developer”.
 
 ---
 
 ### Publish architecture (Worker)
 
-**Problem solved:** Cloudinary signed uploads need the API secret. Putting the secret in the browser (or asking staff to type it on a phone) is unsafe and painful.
+**Problem:** signed Cloudinary uploads need the API secret; putting it in the browser or on a phone is unsafe.
 
-**Solution:** a small Cloudflare Worker holds the secrets. The admin frontend only sends:
+**Solution:** small Worker holds secrets. Admin sends only:
 
 ```json
-{ "password": "…", "catalog": { "products": [], "zones": [], "texts": {} } }
+{ "password": "…", "catalog": { "products": [], "zones": [], "texts": {}, "images": {} } }
 ```
 
-to:
+to e.g. `https://{name}.{account}.workers.dev/publish`.
 
-```text
-https://naravazz-api.storengola.workers.dev/publish
-```
+Worker checks `ADMIN_PASSWORD`, signs the raw upload, writes `{folder}/catalog`.
 
-Worker checks `ADMIN_PASSWORD`, then performs the signed Cloudinary raw upload.
-
-**Deploy (once):**
+**Deploy**
 
 ```bash
 cd worker
@@ -121,15 +144,9 @@ npx wrangler secret put CLOUDINARY_API_KEY
 npx wrangler secret put CLOUDINARY_API_SECRET
 ```
 
-Staff flow on any device (including phones):
+`wrangler.toml`: `workers_dev = true`, `preview_urls = true` (avoids Wrangler warning).
 
-1. Open `/admin.html` → log in with admin password.
-2. Edit → **Publicar na loja**.
-3. Worker authenticates → signed upload → shop loads new JSON.
-
-No Cloudinary secret on the phone. No manual `products.js` export required.
-
-**Fallback:** if the Worker URL is empty in Definições, admin can still publish with API Key + Secret stored only in that browser’s `localStorage` (desktop convenience; avoid on shared/phone browsers).
+**Fallback:** if publish URL is empty, admin can still use API key/secret stored only in that browser’s `localStorage` (avoid on shared phones).
 
 ---
 
@@ -137,109 +154,87 @@ No Cloudinary secret on the phone. No manual `products.js` export required.
 
 | Item | Role |
 |------|------|
-| **Cloud name** | Account id in URLs (`mir8iioo`) |
-| **API key + secret** | Stored only on the **Worker** (or optionally in one browser’s localStorage as fallback) — **never** committed to the repo |
-| **Upload preset (unsigned)** | Browser media uploads only (`naravazz_unsigned`) |
-| **Folder** | e.g. `naravazz` — keeps assets grouped |
-| **Catalog public_id** | `naravazz/catalog` (fixed; overwrite on each publish) |
+| Cloud name | In public URLs |
+| Unsigned upload preset | Browser media + product photos |
+| API key + secret | **Only on the Worker** (or one desktop localStorage as fallback) |
+| Folder | e.g. `clientname` — group assets |
+| Catalog `public_id` | e.g. `clientname/catalog` (overwrite each publish) |
 
-**Preset (example `naravazz_unsigned`):**
+Media preset: unsigned, overwrite off, unique filenames.  
+Catalog: signed raw upload via Worker only.
 
-* Mode: **Unsigned**
-* Folder: `naravazz`
-* Allowed formats: jpg, png, webp, gif, jpeg, mp4, webm
-* Overwrite: off for media (unique filenames)
+---
 
-**Media upload (browser, unsigned):**
+### Mobile UX (required pattern)
 
-```http
-POST https://api.cloudinary.com/v1_1/{cloud_name}/image/upload
-POST https://api.cloudinary.com/v1_1/{cloud_name}/video/upload
-```
+**Admin**
 
-Form fields: `file`, `upload_preset`, optional `folder`.
+* Sticky bottom **Guardar / Publicar** under ~900px + `safe-area-inset-bottom`
+* Product list → **cards** on small screens (hide table)
+* Full-viewport product modal on mobile
+* Touch targets ≥ 44px; inputs `font-size: 16px` (no iOS zoom)
+* `inputmode="decimal"` / `tel` on price and phone fields
+* Toast centered above sticky bar
+* Confirm before publish (mention products + zones + texts + images)
 
-**Catalog publish (Worker, signed):**
+**Public**
 
-```http
-POST https://api.cloudinary.com/v1_1/{cloud_name}/raw/upload
-```
-
-Signed with `public_id` + `timestamp` + API secret (handled entirely inside the Worker).
+* `viewport-fit=cover` + safe-area on fixed header / cart / sticky CTAs
+* Sticky product **Add to cart** bar on mobile
+* Larger qty controls in cart drawer
+* WhatsApp via `location.href` on mobile UA
 
 ---
 
 ### Security model
 
-**Media (unsigned preset)**  
-Anyone who knows cloud name + preset name can upload new files into the folder. They cannot open the Cloudinary dashboard or change billing. Keep overwrite **off** and use unique filenames.
-
-**Catalog (signed via Worker)**  
-Only requests that present the correct admin password are accepted by the Worker. The API secret never leaves Cloudflare. This is the recommended path for phones and day-to-day publishing.
-
-**Hardening options later:**
-
-1. Rate-limit the Worker.
-2. Move catalog to **Cloudflare KV** (free tier) instead of Cloudinary raw files.
-3. Stronger auth (token / Cloudflare Access) if the admin URL becomes widely known.
+* **Unsigned media:** anyone who knows cloud name + preset can upload; cannot access dashboard or secret. Keep overwrite off.
+* **Catalog:** only Worker with correct admin password can overwrite `catalog.json`.
+* Change default admin password after handoff.
+* Media “delete” in admin = library list only; true file deletion needs Cloudinary dashboard or signed destroy.
 
 ---
 
-### Cloudflare deploy
+### Staff workflow
 
-* **Pages:** connect GitHub repo → build command none → output root of static files.
-* **Worker:** deploy from `worker/` with Wrangler; set the four secrets listed above.
-* After adding `admin.html`, `css/admin.css`, `js/admin.js`, redeploy Pages so `/admin.html` is live.
+1. `/admin.html` → password.
+2. Edit products / zones / texts / site images / upload media.
+3. Optional **Guardar rascunho** → preview shop in the same browser.
+4. **Publicar na loja** → all visitors get new catalog on next load.
 
-Env you might document in README (not secrets):
-
-```text
-CLOUDINARY_CLOUD_NAME=mir8iioo
-CLOUDINARY_UPLOAD_PRESET=naravazz_unsigned
-CLOUDINARY_FOLDER=naravazz
-CATALOG_URL=https://res.cloudinary.com/mir8iioo/raw/upload/naravazz/catalog.json
-PUBLISH_URL=https://naravazz-api.storengola.workers.dev/publish
-```
+No manual `products.js` export. No site redeploy for catalog or site-image changes (only for HTML/CSS/JS code changes).
 
 ---
 
-### Staff workflow (target)
+### Copy-paste checklist for a **new** website
 
-1. Open `/admin.html` → password.
-2. Edit products / zones / texts / upload media.
-3. **Guardar rascunho** → check the shop in the same browser.
-4. **Publicar na loja** → Worker writes `catalog.json` → all visitors get the new data on next load (cache-bust with `?t=timestamp` is already applied in `app.js`).
-
-No manual `products.js` upload or site redeploy required for catalog changes.
-
----
-
-### Copy-paste checklist for a new website
-
-- [ ] Static HTML/CSS/JS structure as above  
-- [ ] `products.js` defaults + `app.js` loader (localStorage → remote JSON → defaults)  
-- [ ] Cloudinary account + **unsigned** preset + folder (media only)  
-- [ ] `admin.html` / `admin.css` / `admin.js` (CRUD + media upload + publish)  
-- [ ] Cloudflare Worker with secrets (password + Cloudinary key/secret)  
-- [ ] Change default admin password  
-- [ ] Deploy Pages + deploy Worker  
-- [ ] Optional later: KV instead of Cloudinary for the catalog  
+- [ ] Clone structure: static pages + `admin.html` + `css/` + `js/` + `worker/`
+- [ ] Rename brand, WhatsApp, Instagram, address, currency label
+- [ ] New Cloudinary cloud/folder + **unsigned** preset (media only)
+- [ ] New Worker name + four secrets; set `PUBLISH_URL` default in admin.js
+- [ ] Point `CATALOG_JSON_URL` in `app.js` at the new catalog URL
+- [ ] Set `DEFAULT_SITE_IMAGES` + `SITE_IMAGE_SLOTS` to match this site’s `data-site-img*` hooks
+- [ ] Seed `products.js` + default images under `images/`
+- [ ] Change default admin password
+- [ ] Deploy Pages (or static host) + deploy Worker
+- [ ] Smoke-test: upload image → assign site slot → publish → hard-refresh public site
+- [ ] Optional: Cloudflare Access in front of `/admin.html`
 
 ---
 
 ### What this stack is good for
 
 * Small shops, beauty, local delivery, WhatsApp orders  
-* Staff editing prices and photos from any phone without a developer  
-* Zero/low cost (Cloudinary free credits + Cloudflare free tier)  
-* Secrets stay on the server (Worker), not on staff devices  
+* Staff updating prices, photos, and homepage imagery from a phone  
+* Low cost (Cloudinary free credits + Cloudflare free tier)  
+* Secrets stay on the server  
 
 ### What it is not
 
-* Multi-warehouse inventory with strong auth  
-* PCI card payments (use WhatsApp / external checkout)  
-* High-security admin without a backend (Worker is the minimal backend)
+* Multi-warehouse inventory / strong multi-user auth  
+* PCI card payments  
+* Automatic deletion of Cloudinary binaries from the admin UI (without extra Worker endpoints)
 
 ---
 
-*Derived from the Naravazz Diversos project (Luanda). Adapt names, WhatsApp number, Cloudinary folder, and Worker name per client.*
+*Adapt names, WhatsApp number, Cloudinary folder, Worker name, and image slot keys per client.*

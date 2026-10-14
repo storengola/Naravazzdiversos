@@ -766,10 +766,23 @@
           : `<img src="${escapeAttr(thumb)}" alt="">`}
         <div class="media-actions">
           <button type="button" data-copy-url="${i}" title="Copiar URL">URL</button>
+          <button type="button" data-del-media="${i}" title="Remover da biblioteca">✕</button>
         </div>
         <div class="media-meta">${escapeHtml((m.publicId || '').split('/').pop() || 'ficheiro')}</div>
       </div>`;
     }).join('');
+  }
+
+  function deleteMediaFromLibrary(index) {
+    const item = mediaLibrary[index];
+    if (!item) return;
+    const name = (item.publicId || '').split('/').pop() || 'este ficheiro';
+    if (!confirm('Remover «' + name + '» da biblioteca deste browser?\n\nA loja continua a mostrar a imagem se ainda estiver ligada a um produto ou a Imagens do site. O ficheiro no armazenamento online só se apaga no painel Cloudinary (ou pelo programador).')) return;
+    mediaLibrary.splice(index, 1);
+    saveMedia();
+    renderMedia();
+    renderDashboard();
+    toast('Removido da biblioteca');
   }
 
   async function handleFilesUpload(fileList) {
@@ -992,6 +1005,11 @@
     });
 
     document.getElementById('media-grid').addEventListener('click', e => {
+      const delBtn = e.target.closest('[data-del-media]');
+      if (delBtn) {
+        deleteMediaFromLibrary(Number(delBtn.getAttribute('data-del-media')));
+        return;
+      }
       const btn = e.target.closest('[data-copy-url]');
       if (!btn) return;
       const i = Number(btn.getAttribute('data-copy-url'));
@@ -1065,7 +1083,10 @@
 
     document.getElementById('btn-publish').addEventListener('click', async () => {
       const n = products.length;
-      if (!confirm('Publicar ' + n + ' produto(s) para todos os visitantes?')) return;
+      if (!confirm(
+        'Publicar na loja para todos os visitantes?\n\n' +
+        'Isto actualiza produtos (' + n + '), zonas de entrega, textos e imagens do site.'
+      )) return;
       const btn = document.getElementById('btn-publish');
       btn.disabled = true;
       btn.textContent = 'A publicar…';
