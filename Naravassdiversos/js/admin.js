@@ -390,6 +390,7 @@
     const q = (document.getElementById('product-search').value || '').toLowerCase().trim();
     const cat = document.getElementById('product-filter-cat').value;
     const tbody = document.getElementById('products-tbody');
+    const cards = document.getElementById('products-cards');
     const filtered = products.filter(p => {
       if (cat && p.category !== cat) return false;
       if (!q) return true;
@@ -399,6 +400,7 @@
 
     if (!filtered.length) {
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">Nenhum produto encontrado</td></tr>';
+      if (cards) cards.innerHTML = '<div class="admin-empty"><p>Nenhum produto encontrado</p></div>';
       return;
     }
 
@@ -418,6 +420,27 @@
         </td>
       </tr>`;
     }).join('');
+
+    if (cards) {
+      cards.innerHTML = filtered.map(p => {
+        const idx = products.indexOf(p);
+        const img = p.image || '';
+        return `<div class="product-card-admin">
+          <img class="admin-thumb" src="${escapeAttr(img)}" alt="" onerror="this.src='images/favicon.png'">
+          <div class="product-card-admin-body">
+            <strong>${escapeHtml(p.name)}</strong>
+            <div class="product-card-admin-meta">
+              ${escapeHtml(p.categoryLabel || p.category)} · ${formatPrice(p.price)}
+              ${p.badge ? ' · <span class="admin-badge">' + escapeHtml(p.badge) + '</span>' : ''}
+            </div>
+            <div class="product-card-admin-actions">
+              <button type="button" class="btn-admin btn-admin-secondary btn-admin-sm" data-edit-product="${idx}">Editar</button>
+              <button type="button" class="btn-admin btn-admin-danger btn-admin-sm" data-del-product="${idx}">Apagar</button>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
   }
 
   function openProductModal(index) {
@@ -667,63 +690,6 @@
     if (sec) sec.value = cloudinaryCfg.apiSecret || '';
   }
 
-  /* ---- Export products.js ---- */
-  function exportProductsJs() {
-    const body = products.map(p => {
-      const lines = [
-        `    id: ${JSON.stringify(p.id)}`,
-        `    name: ${JSON.stringify(p.name)}`,
-        `    nameEn: ${JSON.stringify(p.nameEn || p.name)}`,
-        `    price: ${Number(p.price) || 0}`,
-        `    category: ${JSON.stringify(p.category)}`,
-        `    categoryLabel: ${JSON.stringify(p.categoryLabel || p.category)}`,
-        `    categoryLabelEn: ${JSON.stringify(p.categoryLabelEn || p.category)}`,
-        `    image: ${JSON.stringify(p.image || '')}`
-      ];
-      if (p.badge) lines.push(`    badge: ${JSON.stringify(p.badge)}`);
-      lines.push(`    desc: ${JSON.stringify(p.desc || '')}`);
-      lines.push(`    descEn: ${JSON.stringify(p.descEn || '')}`);
-      lines.push(`    brand: ${JSON.stringify(p.brand || '')}`);
-      return '  {\n' + lines.join(',\n') + '\n  }';
-    }).join(',\n');
-
-    const zonesBody = zones.map(z =>
-      `  { name: ${JSON.stringify(z.name)}, price: ${Number(z.price) || 0} }`
-    ).join(',\n');
-
-    const content = `/* Nara Vazz Product Catalog — exported from Admin ${new Date().toISOString().slice(0, 10)} */
-const PRODUCTS = [
-${body}
-];
-
-/* Delivery zones (Kz) — single source of truth for delivery.html + checkout */
-const DELIVERY_ZONES = [
-${zonesBody}
-];
-
-function formatPrice(value) {
-  return value.toLocaleString('pt-AO') + ' Kz';
-}
-
-function getProductById(id) {
-  return PRODUCTS.find(p => p.id === id);
-}
-
-function getProductsByCategory(cat) {
-  if (!cat || cat === 'all') return PRODUCTS;
-  return PRODUCTS.filter(p => p.category === cat);
-}
-`;
-
-    const blob = new Blob([content], { type: 'application/javascript;charset=utf-8' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'products.js';
-    a.click();
-    URL.revokeObjectURL(a.href);
-    toast('products.js descarregado');
-  }
-
   /* ---- Escape helpers ---- */
   function escapeHtml(s) {
     return String(s == null ? '' : s)
@@ -765,12 +731,19 @@ function getProductsByCategory(cat) {
     document.getElementById('product-filter-cat').addEventListener('change', renderProducts);
     document.getElementById('btn-add-product').addEventListener('click', () => openProductModal(-1));
 
-    document.getElementById('products-tbody').addEventListener('click', e => {
-      const edit = e.target.closest('[data-edit-product]');
-      const del = e.target.closest('[data-del-product]');
-      if (edit) openProductModal(Number(edit.getAttribute('data-edit-product')));
-      if (del) deleteProduct(Number(del.getAttribute('data-del-product')));
-    });
+    const onProductAction = e => {
+      const editBtn = e.target.closest('[data-edit-product]');
+      const delBtn = e.target.closest('[data-del-product]');
+      if (editBtn) {
+        openProductModal(Number(editBtn.getAttribute('data-edit-product')));
+      } else if (delBtn) {
+        const idx = Number(delBtn.getAttribute('data-del-product'));
+        if (confirm('Apagar este produto?')) deleteProduct(idx);
+      }
+    };
+    document.getElementById('products-tbody').addEventListener('click', onProductAction);
+    const cardsEl = document.getElementById('products-cards');
+    if (cardsEl) cardsEl.addEventListener('click', onProductAction);
 
     document.getElementById('product-modal-close').addEventListener('click', closeProductModal);
     document.getElementById('product-modal-cancel').addEventListener('click', closeProductModal);
@@ -915,6 +888,8 @@ function getProductsByCategory(cat) {
     });
 
     document.getElementById('btn-publish').addEventListener('click', async () => {
+      const n = products.length;
+      if (!confirm('Publicar ' + n + ' produto(s) para todos os visitantes?')) return;
       const btn = document.getElementById('btn-publish');
       btn.disabled = true;
       btn.textContent = 'A publicar…';
@@ -922,6 +897,7 @@ function getProductsByCategory(cat) {
         const data = await publishCatalog();
         renderDashboard();
         toast('Publicado — a loja já pode carregar o catálogo novo');
+        if (navigator.vibrate) navigator.vibrate(40);
         console.info('Catalog URL:', data.secure_url);
       } catch (err) {
         toast(err.message || 'Erro ao publicar', true);
@@ -931,12 +907,6 @@ function getProductsByCategory(cat) {
       }
     });
 
-    document.getElementById('btn-export').addEventListener('click', () => {
-      collectTextsFromEditor();
-      saveProducts();
-      saveZones();
-      exportProductsJs();
-    });
   }
 
   /* ---- Init ---- */

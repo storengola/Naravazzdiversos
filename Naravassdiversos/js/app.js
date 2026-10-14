@@ -53,10 +53,35 @@
       if (!res.ok) return false;
       const data = await res.json();
       if (!data || !Array.isArray(data.products)) return false;
+      const prev = localStorage.getItem('nv_catalog_seen_at') || '';
       applyCatalogObject(data);
+      if (data.updatedAt && data.updatedAt !== prev) {
+        const isFirst = !prev;
+        localStorage.setItem('nv_catalog_seen_at', data.updatedAt);
+        if (!isFirst) {
+          setTimeout(() => {
+            const msg = (localStorage.getItem('nv_lang') || 'pt') === 'en'
+              ? 'Catalog updated'
+              : 'Catálogo actualizado';
+            if (typeof showToast === 'function') showToast(msg);
+          }, 600);
+        }
+      }
       return true;
     } catch (e) {
       return false;
+    }
+  }
+
+  /** Open WhatsApp reliably on mobile Safari (window.open is often blocked) */
+  function openWhatsApp(text) {
+    const url = 'https://wa.me/244938890975?text=' + encodeURIComponent(text);
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    if (isMobile) {
+      window.location.href = url;
+    } else {
+      const w = window.open(url, '_blank');
+      if (!w) window.location.href = url;
     }
   }
 
@@ -1072,6 +1097,10 @@
           <div class="product-grid" id="related-grid"></div>
         </div>
       </div>
+      <div class="product-sticky-bar" id="product-sticky-bar">
+        <span class="price">${formatPrice(product.price)}</span>
+        <button type="button" class="btn btn-primary" id="add-detail-sticky">${t('productAdd')}</button>
+      </div>
     `;
 
     document.getElementById('product-back')?.addEventListener('click', () => {
@@ -1086,15 +1115,15 @@
     const qtyEl = document.getElementById('qty-value');
     document.getElementById('qty-minus')?.addEventListener('click', () => {
       qty = Math.max(1, qty - 1);
-      qtyEl.textContent = qty;
+      if (qtyEl) qtyEl.textContent = qty;
     });
     document.getElementById('qty-plus')?.addEventListener('click', () => {
       qty += 1;
-      qtyEl.textContent = qty;
+      if (qtyEl) qtyEl.textContent = qty;
     });
-    document.getElementById('add-detail')?.addEventListener('click', () => {
-      addToCart(product.id, qty);
-    });
+    const doAdd = () => addToCart(product.id, qty);
+    document.getElementById('add-detail')?.addEventListener('click', doAdd);
+    document.getElementById('add-detail-sticky')?.addEventListener('click', doAdd);
 
     const related = PRODUCTS.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
     const relGrid = document.getElementById('related-grid');
@@ -1230,7 +1259,7 @@
             </div>
             <div class="form-group">
               <label for="co-phone">${t('checkoutPhone')}</label>
-              <input type="tel" id="co-phone" name="phone" required autocomplete="tel" placeholder="+244 ...">
+              <input type="tel" id="co-phone" name="phone" required autocomplete="tel" inputmode="tel" placeholder="+244 ...">
             </div>
             <div class="form-group">
               <label for="co-zone">${t('checkoutZone')}</label>
@@ -1319,7 +1348,7 @@
       msg += `\nCidade: ${city}\nZona de entrega: ${zone}`;
       if (notes) msg += `\nNotas: ${notes}`;
 
-      window.open('https://wa.me/244938890975?text=' + encodeURIComponent(msg), '_blank');
+      openWhatsApp(msg);
     });
   }
 
@@ -1377,10 +1406,7 @@
           ? `Olá Nara Vazz! Quero receber novidades e promoções no meu WhatsApp.\n\nO meu número: ${number}`
           : `Hello Nara Vazz! I want to receive news and offers on my WhatsApp.\n\nMy number: ${number}`;
 
-        window.open(
-          'https://wa.me/244938890975?text=' + encodeURIComponent(msg),
-          '_blank'
-        );
+        openWhatsApp(msg);
         showToast(currentLang === 'pt' ? 'Obrigado pela subscrição!' : 'Thank you for subscribing!');
         form.reset();
       });

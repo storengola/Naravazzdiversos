@@ -2316,3 +2316,115 @@ button.header-icon {
 .btn-clear-cart:hover {
   color: var(--danger);
 }
+
+/* ---------- Mobile / safe-area improvements ---------- */
+.announce-bar {
+  padding-left: max(0.75rem, env(safe-area-inset-left, 0px));
+  padding-right: max(0.75rem, env(safe-area-inset-right, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  height: calc(var(--announce-h) + env(safe-area-inset-top, 0px));
+}
+
+.site-header {
+  top: calc(var(--announce-h) + env(safe-area-inset-top, 0px));
+}
+
+.site-header.scrolled {
+  top: calc(var(--announce-h) + env(safe-area-inset-top, 0px));
+}
+
+/* Larger qty hit targets in cart panel */
+.cart-panel-item .qty-control {
+  padding: 0.25rem 0.4rem;
+}
+.cart-panel-item .qty-control button {
+  width: 36px;
+  height: 36px;
+  font-size: 1.15rem;
+  touch-action: manipulation;
+}
+
+.cart-panel {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.cart-panel-footer {
+  padding-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+  position: sticky;
+  bottom: 0;
+}
+
+.cart-panel-item-remove {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+}
+
+.qty-control button {
+  touch-action: manipulation;
+  min-width: 44px;
+}
+
+/* Product page sticky add-to-cart (mobile) */
+.product-sticky-bar {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .product-detail {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  }
+  .product-sticky-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 900;
+    padding: 12px 16px;
+    padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+    background: rgba(253, 249, 246, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--border-soft);
+    box-shadow: 0 -4px 20px rgba(42, 36, 32, 0.08);
+  }
+  .product-sticky-bar .price {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--primary);
+    white-space: nowrap;
+  }
+  .product-sticky-bar .btn {
+    flex: 1;
+    min-height: 48px;
+  }
+  /* Hide inline add button on mobile — sticky bar replaces it */
+  .product-info > .btn-full#add-detail {
+    display: none;
+  }
+}
+
+/* Mobile drawer safe area */
+.mobile-drawer {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Form inputs 16px on mobile to stop iOS zoom */
+@media (max-width: 767px) {
+  input[type="text"],
+  input[type="tel"],
+  input[type="email"],
+  input[type="number"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}

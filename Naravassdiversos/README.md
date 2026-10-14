@@ -16,10 +16,12 @@ Luxury beauty, cosmetics & personal care e-commerce website for **Naravazz Diver
 | Markup | HTML5 |
 | Styles | Pure CSS (custom properties, mobile-first) |
 | Logic | Vanilla JavaScript |
-| Hosting | Cloudflare Pages / GitHub Pages ready |
-| Build | None - static files only |
+| Hosting | Cloudflare Pages |
+| Media & live catalog | Cloudinary |
+| Publish API | Cloudflare Worker (`worker/`) — holds secrets |
+| Build | None — static files only |
 
-No frameworks, no bundler, no dependencies.
+No frameworks, no bundler, no dependencies in the frontend.
 
 ---
 
@@ -40,9 +42,9 @@ Naravassdiversos/
 │   ├── styles.css      # Design system & layout
 │   └── admin.css       # Admin panel styles
 ├── js/
-│   ├── products.js     # Product catalog data
-│   ├── app.js          # Cart panel, i18n, shop, checkout + admin overrides
-│   └── admin.js        # Admin panel logic + Cloudinary uploads
+│   ├── products.js     # Default catalog + delivery zones (fallback)
+│   ├── app.js          # Cart, i18n, shop, checkout + loads live catalog
+│   └── admin.js        # Admin CRUD, Cloudinary media upload, publish via Worker
 ├── images/
 │   ├── favicon.png     # Favicon (from logo)
 │   ├── favicon-*.png   # 16 / 32 / 48 / 180 sizes
@@ -57,6 +59,11 @@ Naravassdiversos/
 │   ├── experiencia-loja.mp4
 │   ├── experiencia-clientes.mp4
 │   └── experiencia-depoimento.mp4
+├── worker/             # Cloudflare Worker — catalog publish API
+│   ├── src/index.js
+│   ├── wrangler.toml
+│   └── README.md
+├── BLUEPRINT.md
 └── README.md
 ```
 
@@ -133,6 +140,8 @@ You can also open `index.html` directly in the browser.
 
 Custom domain and HTTPS are handled by Cloudflare.
 
+The **Worker** (`worker/`) is deployed separately — see [Admin panel → Publish via Worker](#publish-via-cloudflare-worker) and `worker/README.md`.
+
 ---
 
 ## Deploy on GitHub Pages
@@ -145,7 +154,15 @@ Custom domain and HTTPS are handled by Cloudflare.
 
 ## Adding / editing products
 
-Edit `js/products.js`. Each product object looks like:
+### Preferred (staff, any device)
+
+Use **`admin.html`** → edit products / zones / texts → **Publicar na loja**.
+
+This uploads a live `catalog.json` to Cloudinary. Every visitor loads it automatically. No need to touch `products.js` or redeploy the site.
+
+### Fallback / defaults
+
+Edit `js/products.js` only if you need a permanent default when the remote catalog is unavailable. Each product object looks like:
 
 ```js
 {
@@ -163,8 +180,6 @@ Edit `js/products.js`. Each product object looks like:
   brand: "Brand name"
 }
 ```
-
-After saving, the shop, featured section and product pages update automatically.
 
 ---
 
@@ -196,6 +211,11 @@ After saving, the shop, featured section and product pages update automatically.
 ---
 
 ## Changelog (important)
+
+**2026-10-14 (live catalog + Worker)**
+- **Publicar na loja** writes `catalog.json` to Cloudinary so all visitors see updates without exporting `products.js` or redeploying
+- Cloudflare Worker (`worker/`) holds Cloudinary API secret; phones only need the admin password to publish
+- Admin settings: Worker publish URL is the primary path; API Key/Secret fields are optional fallback only
 
 **2026-10-11 (owner photo + copy)**
 - Homepage about teaser and About page use owner photo (`images/owner-nara.jpg`)
@@ -254,23 +274,61 @@ Staff can manage products, delivery zones, site copy and media at **`admin.html`
 - **Media** — upload images/videos to Cloudinary; copy CDN URLs into products
 
 ### Cloudinary (configured)
+
 | Setting | Value |
 |---------|--------|
 | Account | storengola@gmail.com |
 | Cloud name | `mir8iioo` |
-| Upload preset | `naravazz_unsigned` (unsigned) |
+| Upload preset | `naravazz_unsigned` (unsigned) — used for **media** only |
 | Folder | `naravazz` |
-
-Media uploads use the **unsigned** preset. **Publicar na loja** needs API Key + Secret once in **Definições** (saved only in that browser’s `localStorage`, not in the repo).
+| Live catalog | `https://res.cloudinary.com/mir8iioo/raw/upload/naravazz/catalog.json` |
 
 ### How changes are applied
+
 1. Edit in the admin
-2. **Guardar rascunho** — preview on the same browser only
-3. **Publicar na loja** — writes `catalog.json` to Cloudinary; all visitors load:
-   `https://res.cloudinary.com/mir8iioo/raw/upload/naravazz/catalog.json`
-4. Optional **Exportar products.js** for offline backup
+2. **Guardar rascunho** — saves overrides to `localStorage` (preview on the **same browser** only)
+3. **Publicar na loja** — sends the catalog to the **Cloudflare Worker**, which does a signed upload of `catalog.json` to Cloudinary. **All visitors** then load the new data.
 
 Storage keys: `nv_products_override`, `nv_zones_override`, `nv_texts_override`, `nv_cloudinary_cfg`, `nv_media_library`.
+
+### Publish via Cloudflare Worker
+
+The Worker (`worker/`, name `naravazz-api`) stores the Cloudinary API secret on the server. Staff phones **never** need the secret — only the admin password.
+
+**Default publish URL (already set in admin):**
+
+```text
+https://naravazz-api.storengola.workers.dev/publish
+```
+
+**Deploy / secrets (once, from `worker/`):**
+
+```bash
+cd worker
+npx wrangler deploy
+
+npx wrangler secret put ADMIN_PASSWORD          # same as admin.html password
+npx wrangler secret put CLOUDINARY_CLOUD_NAME   # mir8iioo
+npx wrangler secret put CLOUDINARY_API_KEY
+npx wrangler secret put CLOUDINARY_API_SECRET
+```
+
+See `worker/README.md` for the full API.
+
+**Fallback:** if the Worker URL is empty, admin can still publish with API Key + Secret stored only in that browser’s `localStorage` (not recommended for phones).
+
+---
+
+## Public site — how the catalog is loaded
+
+1. Page loads `js/products.js` → default `PRODUCTS` and `DELIVERY_ZONES`.
+2. `app.js` fetches the live catalog:
+   ```text
+   https://res.cloudinary.com/mir8iioo/raw/upload/naravazz/catalog.json
+   ```
+3. If the remote JSON is present, it replaces products, zones and texts for all visitors.
+4. Same-browser admin drafts (`localStorage`) still take priority for the person editing.
+5. If the remote fetch fails → defaults from `products.js` remain.
 
 ---
 
@@ -285,4 +343,3 @@ Uses CSS custom properties, `backdrop-filter`, and ES6+.
 
 Client project for **Naravazz Diversos**.  
 All product images and brand assets belong to the client.
-
