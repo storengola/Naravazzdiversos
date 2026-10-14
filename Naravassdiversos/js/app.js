@@ -62,22 +62,30 @@
       if (raw) Object.assign(images, JSON.parse(raw));
     } catch (e) { /* */ }
 
-    // CSS background slots
+    function isUsableImageUrl(url) {
+      if (!url || typeof url !== 'string') return false;
+      const u = url.trim();
+      if (!u || u === 'undefined' || u === 'null') return false;
+      // allow relative paths and absolute http(s) / data / blob
+      return /^(https?:|data:|blob:|\/|\.\/|images\/)/i.test(u) || !/^[a-z]+:/i.test(u);
+    }
+
+    // CSS background slots (shop hero etc.)
     const bgMap = {
       hero: { el: document.querySelector('[data-site-img-bg="hero"]'), prop: '--hero-bg' },
       shop_hero: { el: document.querySelector('[data-site-img-bg="shop_hero"]'), prop: '--shop-hero-bg' }
     };
     Object.keys(bgMap).forEach(key => {
       const url = images[key];
-      if (!url || !bgMap[key].el) return;
+      if (!isUsableImageUrl(url) || !bgMap[key].el) return;
       bgMap[key].el.style.setProperty(bgMap[key].prop, 'url("' + url.replace(/"/g, '\\"') + '")');
     });
 
-    // <img> and video poster slots
+    // <img> and video poster slots (hero uses real <img> for Safari reliability)
     document.querySelectorAll('[data-site-img]').forEach(el => {
       const key = el.getAttribute('data-site-img');
       const url = images[key];
-      if (!url) return;
+      if (!isUsableImageUrl(url)) return;
       if (el.tagName === 'IMG') {
         el.src = url;
       } else if (el.tagName === 'VIDEO') {
