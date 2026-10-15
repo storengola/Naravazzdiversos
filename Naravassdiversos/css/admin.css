@@ -45,19 +45,47 @@ body.admin-body {
   color: var(--text-soft);
   margin-bottom: 6px;
 }
+.admin-password-wrap {
+  position: relative;
+  margin-bottom: 16px;
+}
 .admin-login-card input[type="password"],
 .admin-login-card input[type="text"] {
   width: 100%;
-  padding: 12px 14px;
+  padding: 12px 44px 12px 14px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  margin-bottom: 16px;
+  margin-bottom: 0;
   background: var(--surface);
 }
 .admin-login-card input:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(223, 109, 72, 0.15);
 }
+.admin-password-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 0;
+}
+.admin-password-toggle:hover {
+  color: var(--text);
+  background: var(--surface-alt, #f5f0eb);
+}
+.admin-password-toggle .icon-eye-off { display: none; }
+.admin-password-toggle.is-visible .icon-eye { display: none; }
+.admin-password-toggle.is-visible .icon-eye-off { display: block; }
 .admin-login-error {
   color: var(--danger);
   font-size: 0.85rem;
@@ -569,11 +597,13 @@ body.admin-body {
 }
 .admin-toast.error { background: var(--danger); }
 
-/* Mobile product cards (hidden on desktop) */
-.products-cards {
+/* Mobile product / zone cards (hidden on desktop) */
+.products-cards,
+.zones-cards {
   display: none;
 }
-.product-card-admin {
+.product-card-admin,
+.zone-card-admin {
   display: flex;
   gap: 12px;
   align-items: flex-start;
@@ -581,27 +611,32 @@ body.admin-body {
   border-bottom: 1px solid var(--border-soft);
   background: #fff;
 }
-.product-card-admin:last-child { border-bottom: none; }
+.product-card-admin:last-child,
+.zone-card-admin:last-child { border-bottom: none; }
 .product-card-admin .admin-thumb {
   width: 64px;
   height: 64px;
   flex-shrink: 0;
 }
-.product-card-admin-body {
+.product-card-admin-body,
+.zone-card-admin-body {
   flex: 1;
   min-width: 0;
 }
-.product-card-admin-body strong {
+.product-card-admin-body strong,
+.zone-card-admin-body strong {
   display: block;
   font-size: 0.95rem;
   margin-bottom: 2px;
 }
-.product-card-admin-meta {
+.product-card-admin-meta,
+.zone-card-admin-meta {
   font-size: 0.78rem;
   color: var(--muted);
   margin-bottom: 8px;
 }
-.product-card-admin-actions {
+.product-card-admin-actions,
+.zone-card-admin-actions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
@@ -790,12 +825,14 @@ body.admin-body {
     font-size: 0.9rem;
   }
 
-  /* Product table → cards */
+  /* Product / zone table → cards */
   .admin-table-wrap { display: none; }
-  .products-cards {
+  .products-cards,
+  .zones-cards {
     display: block;
   }
-  #panel-products .admin-card {
+  #panel-products .admin-card,
+  #panel-delivery .admin-card {
     overflow: hidden;
   }
 

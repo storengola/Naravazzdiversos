@@ -608,8 +608,10 @@
   /* ---- Zones ---- */
   function renderZones() {
     const tbody = document.getElementById('zones-tbody');
+    const cards = document.getElementById('zones-cards');
     if (!zones.length) {
       tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--muted);padding:32px">Sem zonas</td></tr>';
+      if (cards) cards.innerHTML = '<div class="admin-empty"><p>Sem zonas</p></div>';
       return;
     }
     tbody.innerHTML = zones.map((z, i) => `<tr>
@@ -620,6 +622,18 @@
         <button type="button" class="btn-admin btn-admin-danger btn-admin-sm" data-del-zone="${i}">Apagar</button>
       </td>
     </tr>`).join('');
+    if (cards) {
+      cards.innerHTML = zones.map((z, i) => `<div class="zone-card-admin">
+        <div class="zone-card-admin-body">
+          <strong>${escapeHtml(z.name)}</strong>
+          <div class="zone-card-admin-meta">${formatPrice(z.price)}</div>
+          <div class="zone-card-admin-actions">
+            <button type="button" class="btn-admin btn-admin-secondary btn-admin-sm" data-edit-zone="${i}">Editar</button>
+            <button type="button" class="btn-admin btn-admin-danger btn-admin-sm" data-del-zone="${i}">Apagar</button>
+          </div>
+        </div>
+      </div>`).join('');
+    }
   }
 
   function openZoneModal(index) {
@@ -839,6 +853,16 @@
   /* ---- Events ---- */
   function bindEvents() {
     document.getElementById('login-btn').addEventListener('click', tryLogin);
+    const pwdToggle = document.getElementById('password-toggle');
+    if (pwdToggle) {
+      pwdToggle.addEventListener('click', () => {
+        const input = document.getElementById('admin-password');
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        pwdToggle.classList.toggle('is-visible', show);
+        pwdToggle.setAttribute('aria-label', show ? 'Ocultar palavra-passe' : 'Mostrar palavra-passe');
+      });
+    }
     document.getElementById('admin-password').addEventListener('keydown', e => {
       if (e.key === 'Enter') tryLogin();
     });
@@ -907,12 +931,15 @@
     });
 
     document.getElementById('btn-add-zone').addEventListener('click', () => openZoneModal(-1));
-    document.getElementById('zones-tbody').addEventListener('click', e => {
+    const onZoneAction = e => {
       const edit = e.target.closest('[data-edit-zone]');
       const del = e.target.closest('[data-del-zone]');
       if (edit) openZoneModal(Number(edit.getAttribute('data-edit-zone')));
       if (del) deleteZone(Number(del.getAttribute('data-del-zone')));
-    });
+    };
+    document.getElementById('zones-tbody').addEventListener('click', onZoneAction);
+    const zonesCardsEl = document.getElementById('zones-cards');
+    if (zonesCardsEl) zonesCardsEl.addEventListener('click', onZoneAction);
     document.getElementById('zone-modal-close').addEventListener('click', () => {
       document.getElementById('zone-modal').classList.remove('open');
     });
